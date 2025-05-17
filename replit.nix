@@ -1,9 +1,12 @@
 
 { pkgs }: {
   deps = [
-    pkgs.python3
-    pkgs.python310Packages.pip
-    pkgs.python310Packages.python-dotenv
-    pkgs.python310Packages.gradio
+    pkgs.python3Full
+    pkgs.nodejs
+    pkgs.poetry
   ];
+  env = {
+    PYTHONBIN = "${pkgs.python3Full}/bin/python3";
+    LANG = "en_US.UTF-8";
+  };
 }
