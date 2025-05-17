@@ -22,12 +22,26 @@ theme_map = {
 def create_ui(theme_name="Ocean"):
     css = """
     .gradio-container {
-        width: 80vw !important; 
-        max-width: 80% !important; 
+        width: 90vw !important; 
+        max-width: 90% !important; 
         margin-left: auto !important;
         margin-right: auto !important;
         padding-top: 20px !important;
         padding-bottom: 20px !important;
+    }
+    .container {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+        padding: 20px !important;
+    }
+    .full-width {
+        grid-column: 1 / -1 !important;
+    }
+    @media (max-width: 768px) {
+        .container {
+            grid-template-columns: 1fr !important;
+        }
     }
     .header-text {
         text-align: center;
@@ -76,7 +90,7 @@ def create_ui(theme_name="Ocean"):
     with gr.Blocks(
             title="Browser Use WebUI", theme=theme_map[theme_name], css=css, js=js_func,
     ) as demo:
-        with gr.Row():
+        with gr.Row(elem_classes=["full-width"]):
             gr.Markdown(
                 """
                 # 🌐 Browser Use WebUI
@@ -84,6 +98,7 @@ def create_ui(theme_name="Ocean"):
                 """,
                 elem_classes=["header-text"],
             )
+        with gr.Row(elem_classes=["container"]):
 
         with gr.Tabs() as tabs:
             with gr.TabItem("⚙️ Agent Settings"):
