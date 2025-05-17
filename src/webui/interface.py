@@ -28,6 +28,10 @@ def create_ui(theme_name="Ocean"):
         margin-right: auto !important;
         padding-top: 20px !important;
         padding-bottom: 20px !important;
+        background-color: #800020 !important;
+    }
+    body {
+        background-color: #800020 !important;
     }
     .container {
         display: grid !important;
