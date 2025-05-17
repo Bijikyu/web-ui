@@ -1,9 +1,9 @@
 
 { pkgs }: {
   deps = [
-    pkgs.python312
-    pkgs.python312Packages.pip
-    pkgs.python312Packages.python-dotenv
-    pkgs.python312Packages.gradio
+    pkgs.python3
+    pkgs.python310Packages.pip
+    pkgs.python310Packages.python-dotenv
+    pkgs.python310Packages.gradio
   ];
 }
