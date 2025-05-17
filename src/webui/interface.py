@@ -22,23 +22,40 @@ theme_map = {
 def create_ui(theme_name="Ocean"):
     css = """
     .gradio-container {
-        width: 70vw !important; 
-        max-width: 70% !important; 
+        width: 80vw !important; 
+        max-width: 80% !important; 
         margin-left: auto !important;
         margin-right: auto !important;
-        padding-top: 10px !important;
+        padding-top: 20px !important;
+        padding-bottom: 20px !important;
     }
     .header-text {
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
+        font-weight: 600;
+        color: var(--body-text-color);
     }
     .tab-header-text {
         text-align: center;
+        padding: 15px 0;
+        font-weight: 500;
     }
     .theme-section {
-        margin-bottom: 10px;
-        padding: 15px;
-        border-radius: 10px;
+        margin-bottom: 15px;
+        padding: 20px;
+        border-radius: 12px;
+        background: var(--background-fill-secondary);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .gradio-button {
+        border-radius: 8px !important;
+        transition: transform 0.2s !important;
+    }
+    .gradio-button:hover {
+        transform: translateY(-1px) !important;
+    }
+    .gradio-textbox, .gradio-dropdown {
+        border-radius: 8px !important;
     }
     """
 
