@@ -11,6 +11,11 @@ def create_load_save_config_tab(webui_manager: WebuiManager):
     """
     input_components = set(webui_manager.get_components())
     tab_components = {}
+    
+    # Load most recent config on startup
+    most_recent = webui_manager.get_most_recent_config()
+    if most_recent:
+        asyncio.create_task(webui_manager.load_config(most_recent))
 
     with gr.Row():
         with gr.Column(scale=1):

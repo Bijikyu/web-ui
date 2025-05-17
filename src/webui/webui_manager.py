@@ -75,6 +75,21 @@ class WebuiManager:
         Get id by component
         """
         return self.component_to_id[comp]
+        
+    def get_most_recent_config(self) -> Optional[str]:
+        """
+        Get most recently modified config file
+        """
+        if not os.path.exists(self.settings_save_dir):
+            return None
+            
+        config_files = [os.path.join(self.settings_save_dir, f) 
+                       for f in os.listdir(self.settings_save_dir) 
+                       if f.endswith('.json')]
+        if not config_files:
+            return None
+            
+        return max(config_files, key=os.path.getmtime)
 
     def save_config(self, components: Dict["Component", str]) -> None:
         """
