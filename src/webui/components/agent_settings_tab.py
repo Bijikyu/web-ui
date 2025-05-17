@@ -50,9 +50,10 @@ def create_agent_settings_tab(webui_manager: WebuiManager):
     input_components = set(webui_manager.get_components())
     tab_components = {}
 
-    with gr.Group():
-        with gr.Column():
+    with gr.Row():
+        with gr.Column(scale=1):
             override_system_prompt = gr.Textbox(label="Override system prompt", lines=4, interactive=True)
+        with gr.Column(scale=1):
             extend_system_prompt = gr.Textbox(label="Extend system prompt", lines=4, interactive=True)
 
     with gr.Group():

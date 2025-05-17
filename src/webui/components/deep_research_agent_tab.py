@@ -379,11 +379,12 @@ def create_deep_research_agent_tab(webui_manager: WebuiManager):
             mcp_json_file = gr.File(label="MCP server json", interactive=True, file_types=[".json"])
             mcp_server_config = gr.Textbox(label="MCP server", lines=6, interactive=True, visible=False)
 
-    with gr.Group():
-        research_task = gr.Textbox(label="Research Task", lines=5,
+    with gr.Row():
+        with gr.Column(scale=2):
+            research_task = gr.Textbox(label="Research Task", lines=5,
                                    value="Give me a detailed travel plan to Switzerland from June 1st to 10th.",
                                    interactive=True)
-        with gr.Row():
+        with gr.Column(scale=1):
             resume_task_id = gr.Textbox(label="Resume Task ID", value="",
                                         interactive=True)
             parallel_num = gr.Number(label="Parallel Agent Num", value=1,

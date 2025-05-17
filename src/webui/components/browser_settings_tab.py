@@ -99,23 +99,21 @@ def create_browser_settings_tab(webui_manager: WebuiManager):
                 info="WSS URL for browser remote debugging",
                 interactive=True,
             )
-    with gr.Group():
-        with gr.Row():
+    with gr.Row():
+        with gr.Column(scale=1):
             save_recording_path = gr.Textbox(
                 label="Recording Path",
                 placeholder="e.g. ./tmp/record_videos",
                 info="Path to save browser recordings",
                 interactive=True,
             )
-
             save_trace_path = gr.Textbox(
                 label="Trace Path",
                 placeholder="e.g. ./tmp/traces",
                 info="Path to save Agent traces",
                 interactive=True,
             )
-
-        with gr.Row():
+        with gr.Column(scale=1):
             save_agent_history_path = gr.Textbox(
                 label="Agent History Save Path",
                 value="./tmp/agent_history",
