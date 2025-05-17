@@ -1,12 +1,11 @@
 
 { pkgs }: {
   deps = [
-    pkgs.python3Full
-    pkgs.nodejs
-    pkgs.poetry
+    pkgs.python39
+    pkgs.python39Packages.pip
+    pkgs.python39Packages.python-dotenv
+    pkgs.python39Packages.gradio
+    pkgs.python39Packages.setuptools
+    pkgs.python39Packages.wheel
   ];
-  env = {
-    PYTHONBIN = "${pkgs.python3Full}/bin/python3";
-    LANG = "en_US.UTF-8";
-  };
 }
