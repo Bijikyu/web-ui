@@ -5,7 +5,6 @@ import os
 import gradio as gr
 from datetime import datetime
 from typing import Optional, Dict, List
-import uuid
 import asyncio
 
 from gradio.components import Component

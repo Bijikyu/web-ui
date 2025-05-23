@@ -1,6 +1,5 @@
 import pdb
 
-import pyperclip
 from typing import Optional, Type, Callable, Dict, Any, Union, Awaitable, TypeVar
 from pydantic import BaseModel
 from browser_use.agent.views import ActionResult
