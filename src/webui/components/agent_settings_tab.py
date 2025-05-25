@@ -1,5 +1,4 @@
-import json
-import os
+from src.utils.agent_utils import load_mcp_server_config  # //(use util to load MCP json)
 
 import gradio as gr
 from gradio.components import Component
@@ -7,7 +6,6 @@ from typing import Any, Dict, Optional
 from src.webui.webui_manager import WebuiManager
 from src.utils import config
 import logging
-from functools import partial
 
 logger = logging.getLogger(__name__)
 
@@ -33,14 +31,7 @@ async def update_mcp_server(mcp_file: str, webui_manager: WebuiManager):
         await webui_manager.bu_controller.close_mcp_client()
         webui_manager.bu_controller = None
 
-    if not mcp_file or not os.path.exists(mcp_file) or not mcp_file.endswith('.json'):
-        logger.warning(f"{mcp_file} is not a valid MCP file.")
-        return None, gr.update(visible=False)
-
-    with open(mcp_file, 'r') as f:
-        mcp_server = json.load(f)
-
-    return json.dumps(mcp_server, indent=2), gr.update(visible=True)
+    return await load_mcp_server_config(mcp_file)  # //(delegate JSON loading)
 
 
 def create_agent_settings_tab(webui_manager: WebuiManager):

@@ -1,6 +1,6 @@
 import gradio as gr
 from gradio.components import Component
-from functools import partial
+from src.utils.agent_utils import load_mcp_server_config  # //(use util for MCP json)
 
 from src.webui.webui_manager import WebuiManager
 from src.utils import config
@@ -357,14 +357,7 @@ async def update_mcp_server(mcp_file: str, webui_manager: WebuiManager):
         logger.warning("⚠️ Close controller because mcp file has changed!")
         await webui_manager.dr_agent.close_mcp_client()
 
-    if not mcp_file or not os.path.exists(mcp_file) or not mcp_file.endswith('.json'):
-        logger.warning(f"{mcp_file} is not a valid MCP file.")
-        return None, gr.update(visible=False)
-
-    with open(mcp_file, 'r') as f:
-        mcp_server = json.load(f)
-
-    return json.dumps(mcp_server, indent=2), gr.update(visible=True)
+    return await load_mcp_server_config(mcp_file)  # //(delegate JSON loading)
 
 
 def create_deep_research_agent_tab(webui_manager: WebuiManager):
