@@ -34,7 +34,7 @@ from src.browser.custom_browser import CustomBrowser
 from src.browser.custom_context import CustomBrowserContextConfig
 from src.controller.custom_controller import CustomController
 from src.utils.mcp_client import setup_mcp_client_and_tools
-from src.utils.browser_launch import build_browser_launch_options  # // import util for browser launch options
+from src.utils.browser_launch import build_browser_launch_options  # import util for browser launch options
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,7 @@ async def run_single_browser_task(
     bu_browser_context = None
     try:
         logger.info(f"Starting browser task for query: {task_query}")
-        browser_binary_path, extra_args = build_browser_launch_options(browser_config)  # // util handles user data dir & own browser
+        browser_binary_path, extra_args = build_browser_launch_options(browser_config)  # handles user data dir and custom browser
 
         bu_browser = CustomBrowser(
             config=BrowserConfig(
