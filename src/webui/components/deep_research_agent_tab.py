@@ -10,34 +10,11 @@ from typing import Any, Dict, AsyncGenerator, Optional, Tuple, Union
 import asyncio
 import json
 from src.agent.deep_research.deep_research_agent import DeepResearchAgent
-from src.utils import llm_provider
+from src.utils.agent_utils import initialize_llm  #(import initialize_llm utility)
 
 logger = logging.getLogger(__name__)
 
 
-async def _initialize_llm(provider: Optional[str], model_name: Optional[str], temperature: float,
-                          base_url: Optional[str], api_key: Optional[str], num_ctx: Optional[int] = None):
-    """Initializes the LLM based on settings. Returns None if provider/model is missing."""
-    if not provider or not model_name:
-        logger.info("LLM Provider or Model Name not specified, LLM will be None.")
-        return None
-    try:
-        logger.info(f"Initializing LLM: Provider={provider}, Model={model_name}, Temp={temperature}")
-        # Use your actual LLM provider logic here
-        llm = llm_provider.get_llm_model(
-            provider=provider,
-            model_name=model_name,
-            temperature=temperature,
-            base_url=base_url or None,
-            api_key=api_key or None,
-            num_ctx=num_ctx if provider == "ollama" else None
-        )
-        return llm
-    except Exception as e:
-        logger.error(f"Failed to initialize LLM: {e}", exc_info=True)
-        gr.Warning(
-            f"Failed to initialize LLM '{model_name}' for provider '{provider}'. Please check settings. Error: {e}")
-        return None
 
 
 def _read_file_safe(file_path: str) -> Optional[str]:
@@ -121,7 +98,7 @@ async def run_deep_research(webui_manager: WebuiManager, components: Dict[Compon
         llm_api_key = get_setting("agent_settings", "llm_api_key")
         ollama_num_ctx = get_setting("agent_settings", "ollama_num_ctx")
 
-        llm = await _initialize_llm(
+        llm = await initialize_llm(  #(use shared initialize_llm utility)
             llm_provider_name, llm_model_name, llm_temperature, llm_base_url, llm_api_key,
             ollama_num_ctx if llm_provider_name == "ollama" else None
         )
