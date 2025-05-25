@@ -6,6 +6,7 @@ from gradio.components import Component
 from typing import Any, Dict, Optional
 from src.webui.webui_manager import WebuiManager
 from src.utils import config
+from src.utils.file_utils import load_json_safe  # //import safe json loader
 import logging
 from functools import partial
 
@@ -34,11 +35,13 @@ async def update_mcp_server(mcp_file: str, webui_manager: WebuiManager):
         webui_manager.bu_controller = None
 
     if not mcp_file or not os.path.exists(mcp_file) or not mcp_file.endswith('.json'):
-        logger.warning(f"{mcp_file} is not a valid MCP file.")
-        return None, gr.update(visible=False)
+        logger.warning(f"{mcp_file} is not a valid MCP file.")  # //warn invalid file
+        return None, gr.update(visible=False)  # //hide textbox when invalid
 
-    with open(mcp_file, 'r') as f:
-        mcp_server = json.load(f)
+    mcp_server = load_json_safe(mcp_file)  # //use utility to load json safely
+    if mcp_server is None:  # //check load failure
+        logger.warning(f"{mcp_file} cannot be loaded.")  # //log warning on failure
+        return None, gr.update(visible=False)  # //hide textbox if load fails
 
     return json.dumps(mcp_server, indent=2), gr.update(visible=True)
 
