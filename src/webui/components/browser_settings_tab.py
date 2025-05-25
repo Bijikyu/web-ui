@@ -3,7 +3,8 @@ import logging
 from gradio.components import Component
 
 from src.webui.webui_manager import WebuiManager
-from src.utils import config
+from src.utils import config  # existing config import
+from src.utils.browser_cleanup import close_browser_resources  # shared cleanup utility
 
 logger = logging.getLogger(__name__)
 
@@ -15,15 +16,12 @@ async def close_browser(webui_manager: WebuiManager):
         webui_manager.bu_current_task.cancel()
         webui_manager.bu_current_task = None
 
-    if webui_manager.bu_browser_context:
-        logger.info("⚠️ Closing browser context when changing browser config.")
-        await webui_manager.bu_browser_context.close()
-        webui_manager.bu_browser_context = None
-
-    if webui_manager.bu_browser:
-        logger.info("⚠️ Closing browser when changing browser config.")
-        await webui_manager.bu_browser.close()
-        webui_manager.bu_browser = None
+    await close_browser_resources(  # use shared util to close resources
+        webui_manager.bu_browser,
+        webui_manager.bu_browser_context,
+    )
+    webui_manager.bu_browser_context = None  # reset context reference
+    webui_manager.bu_browser = None  # reset browser reference
 
 def create_browser_settings_tab(webui_manager: WebuiManager):
     """

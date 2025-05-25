@@ -34,6 +34,7 @@ from src.browser.custom_browser import CustomBrowser
 from src.browser.custom_context import CustomBrowserContextConfig
 from src.controller.custom_controller import CustomController
 from src.utils.mcp_client import setup_mcp_client_and_tools
+from src.utils.browser_launch import build_browser_launch_options  # import util for browser launch options
 
 logger = logging.getLogger(__name__)
 
@@ -69,8 +70,6 @@ async def run_single_browser_task(
     headless = browser_config.get("headless", False)
     window_w = browser_config.get("window_width", 1280)
     window_h = browser_config.get("window_height", 1100)
-    browser_user_data_dir = browser_config.get("user_data_dir", None)
-    use_own_browser = browser_config.get("use_own_browser", False)
     browser_binary_path = browser_config.get("browser_binary_path", None)
     wss_url = browser_config.get("wss_url", None)
     cdp_url = browser_config.get("cdp_url", None)
@@ -80,18 +79,7 @@ async def run_single_browser_task(
     bu_browser_context = None
     try:
         logger.info(f"Starting browser task for query: {task_query}")
-        extra_args = [f"--window-size={window_w},{window_h}"]
-        if browser_user_data_dir:
-            extra_args.append(f"--user-data-dir={browser_user_data_dir}")
-        if use_own_browser:
-            browser_binary_path = os.getenv("CHROME_PATH", None) or browser_binary_path
-            if browser_binary_path == "":
-                browser_binary_path = None
-            chrome_user_data = os.getenv("CHROME_USER_DATA", None)
-            if chrome_user_data:
-                extra_args += [f"--user-data-dir={chrome_user_data}"]
-        else:
-            browser_binary_path = None
+        browser_binary_path, extra_args = build_browser_launch_options(browser_config)  # handles user data dir and custom browser
 
         bu_browser = CustomBrowser(
             config=BrowserConfig(

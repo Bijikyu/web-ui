@@ -10,34 +10,11 @@ from typing import Any, Dict, AsyncGenerator, Optional, Tuple, Union
 import asyncio
 import json
 from src.agent.deep_research.deep_research_agent import DeepResearchAgent
-from src.utils import llm_provider
+from src.utils.agent_utils import initialize_llm  #(import initialize_llm utility)
 
 logger = logging.getLogger(__name__)
 
 
-async def _initialize_llm(provider: Optional[str], model_name: Optional[str], temperature: float,
-                          base_url: Optional[str], api_key: Optional[str], num_ctx: Optional[int] = None):
-    """Initializes the LLM based on settings. Returns None if provider/model is missing."""
-    if not provider or not model_name:
-        logger.info("LLM Provider or Model Name not specified, LLM will be None.")
-        return None
-    try:
-        logger.info(f"Initializing LLM: Provider={provider}, Model={model_name}, Temp={temperature}")
-        # Use your actual LLM provider logic here
-        llm = llm_provider.get_llm_model(
-            provider=provider,
-            model_name=model_name,
-            temperature=temperature,
-            base_url=base_url or None,
-            api_key=api_key or None,
-            num_ctx=num_ctx if provider == "ollama" else None
-        )
-        return llm
-    except Exception as e:
-        logger.error(f"Failed to initialize LLM: {e}", exc_info=True)
-        gr.Warning(
-            f"Failed to initialize LLM '{model_name}' for provider '{provider}'. Please check settings. Error: {e}")
-        return None
 
 
 def _read_file_safe(file_path: str) -> Optional[str]:
@@ -108,20 +85,17 @@ async def run_deep_research(webui_manager: WebuiManager, components: Dict[Compon
 
     try:
         # --- 3. Get LLM and Browser Config from other tabs ---
-        # Access settings values via components dict, getting IDs from webui_manager
-        def get_setting(tab: str, key: str, default: Any = None):
-            comp = webui_manager.id_to_component.get(f"{tab}.{key}")
-            return components.get(comp, default) if comp else default
+        # Access settings values via webui_manager  //(remove nested helper and use webui_manager API)
 
         # LLM Config (from agent_settings tab)
-        llm_provider_name = get_setting("agent_settings", "llm_provider")
-        llm_model_name = get_setting("agent_settings", "llm_model_name")
-        llm_temperature = get_setting("agent_settings", "llm_temperature", 0.5)  # Default if not found
-        llm_base_url = get_setting("agent_settings", "llm_base_url")
-        llm_api_key = get_setting("agent_settings", "llm_api_key")
-        ollama_num_ctx = get_setting("agent_settings", "ollama_num_ctx")
+        llm_provider_name = webui_manager.get_component_value(components, "agent_settings", "llm_provider")  //(use webui_manager to read llm provider)
+        llm_model_name = webui_manager.get_component_value(components, "agent_settings", "llm_model_name")  //(use webui_manager to read llm model)
+        llm_temperature = webui_manager.get_component_value(components, "agent_settings", "llm_temperature", 0.5)  # Default if not found //(use new accessor with default)
+        llm_base_url = webui_manager.get_component_value(components, "agent_settings", "llm_base_url")  //(use webui_manager to read base url)
+        llm_api_key = webui_manager.get_component_value(components, "agent_settings", "llm_api_key")  //(use webui_manager to read api key)
+        ollama_num_ctx = webui_manager.get_component_value(components, "agent_settings", "ollama_num_ctx")  //(use webui_manager to read context size)
 
-        llm = await _initialize_llm(
+        llm = await initialize_llm(  #(use shared initialize_llm utility)
             llm_provider_name, llm_model_name, llm_temperature, llm_base_url, llm_api_key,
             ollama_num_ctx if llm_provider_name == "ollama" else None
         )
@@ -130,13 +104,13 @@ async def run_deep_research(webui_manager: WebuiManager, components: Dict[Compon
 
         # Browser Config (from browser_settings tab)
         # Note: DeepResearchAgent constructor takes a dict, not full Browser/Context objects
-        browser_config_dict = {
-            "headless": get_setting("browser_settings", "headless", False),
-            "disable_security": get_setting("browser_settings", "disable_security", True),
-            "browser_binary_path": get_setting("browser_settings", "browser_binary_path"),
-            "user_data_dir": get_setting("browser_settings", "browser_user_data_dir"),
-            "window_width": int(get_setting("browser_settings", "window_w", 1280)),
-            "window_height": int(get_setting("browser_settings", "window_h", 1100)),
+        browser_config_dict = {  //(load browser config from ui via webui_manager)
+            "headless": webui_manager.get_component_value(components, "browser_settings", "headless", False),
+            "disable_security": webui_manager.get_component_value(components, "browser_settings", "disable_security", True),
+            "browser_binary_path": webui_manager.get_component_value(components, "browser_settings", "browser_binary_path"),
+            "user_data_dir": webui_manager.get_component_value(components, "browser_settings", "browser_user_data_dir"),
+            "window_width": int(webui_manager.get_component_value(components, "browser_settings", "window_w", 1280)),
+            "window_height": int(webui_manager.get_component_value(components, "browser_settings", "window_h", 1100)),
             # Add other relevant fields if DeepResearchAgent accepts them
         }
 

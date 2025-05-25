@@ -4,7 +4,10 @@ from typing import TYPE_CHECKING
 import os
 import gradio as gr
 from datetime import datetime
-from typing import Optional, Dict, List
+
+from typing import Optional, Dict, List, Any  #(add Any for get_component_value return types)
+import uuid
+
 import asyncio
 
 from gradio.components import Component
@@ -74,6 +77,12 @@ class WebuiManager:
         Get id by component
         """
         return self.component_to_id[comp]
+
+    def get_component_value(self, components: Dict[Component, Any], tab: str, key: str, default: Any = None) -> Any:
+        """Return component value from components dictionary"""  #(description of change & current functionality)
+        comp_id = f"{tab}.{key}"
+        component = self.id_to_component.get(comp_id)
+        return components.get(component, default) if component else default
         
     def get_most_recent_config(self) -> Optional[str]:
         """
