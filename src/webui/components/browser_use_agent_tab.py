@@ -23,6 +23,7 @@ from src.browser.custom_browser import CustomBrowser
 from src.browser.custom_context import CustomBrowserContextConfig
 from src.controller.custom_controller import CustomController
 from src.utils.agent_utils import initialize_llm  #(import initialize_llm utility)
+from src.utils.browser_launch import build_browser_launch_options  # // import util for browser launch options
 from src.webui.webui_manager import WebuiManager
 
 logger = logging.getLogger(__name__)
@@ -407,21 +408,16 @@ async def run_agent_task(
         # Create Browser if needed
         if not webui_manager.bu_browser:
             logger.info("Launching new browser instance.")
-            extra_args = [f"--window-size={window_w},{window_h}"]
-            if browser_user_data_dir:
-                extra_args.append(f"--user-data-dir={browser_user_data_dir}")
-
-            if use_own_browser:
-                browser_binary_path = (
-                    os.getenv("CHROME_PATH", None) or browser_binary_path
-                )
-                if browser_binary_path == "":
-                    browser_binary_path = None
-                chrome_user_data = os.getenv("CHROME_USER_DATA", None)
-                if chrome_user_data:
-                    extra_args += [f"--user-data-dir={chrome_user_data}"]
-            else:
-                browser_binary_path = None
+            browser_config = {  # // create config dictionary
+                "window_width": window_w,
+                "window_height": window_h,
+                "user_data_dir": browser_user_data_dir,
+                "use_own_browser": use_own_browser,
+                "browser_binary_path": browser_binary_path,
+            }
+            browser_binary_path, extra_args = build_browser_launch_options(
+                browser_config
+            )  # // use util to build launch options
             webui_manager.bu_browser = CustomBrowser(
                 config=BrowserConfig(
                     headless=headless,
