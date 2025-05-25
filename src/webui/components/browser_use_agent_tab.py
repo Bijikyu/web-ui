@@ -22,49 +22,13 @@ from src.agent.browser_use.browser_use_agent import BrowserUseAgent
 from src.browser.custom_browser import CustomBrowser
 from src.browser.custom_context import CustomBrowserContextConfig
 from src.controller.custom_controller import CustomController
-from src.utils import llm_provider
+from src.utils.agent_utils import initialize_llm  #(import initialize_llm utility)
 from src.webui.webui_manager import WebuiManager
 
 logger = logging.getLogger(__name__)
 
 
 # --- Helper Functions --- (Defined at module level)
-
-
-async def _initialize_llm(
-    provider: Optional[str],
-    model_name: Optional[str],
-    temperature: float,
-    base_url: Optional[str],
-    api_key: Optional[str],
-    num_ctx: Optional[int] = None,
-) -> Optional[BaseChatModel]:
-    """Initializes the LLM based on settings. Returns None if provider/model is missing."""
-    if not provider or not model_name:
-        logger.info("LLM Provider or Model Name not specified, LLM will be None.")
-        return None
-    try:
-        # Use your actual LLM provider logic here
-        logger.info(
-            f"Initializing LLM: Provider={provider}, Model={model_name}, Temp={temperature}"
-        )
-        # Example using a placeholder function
-        llm = llm_provider.get_llm_model(
-            provider=provider,
-            model_name=model_name,
-            temperature=temperature,
-            base_url=base_url or None,
-            api_key=api_key or None,
-            # Add other relevant params like num_ctx for ollama
-            num_ctx=num_ctx if provider == "ollama" else None,
-        )
-        return llm
-    except Exception as e:
-        logger.error(f"Failed to initialize LLM: {e}", exc_info=True)
-        gr.Warning(
-            f"Failed to initialize LLM '{model_name}' for provider '{provider}'. Please check settings. Error: {e}"
-        )
-        return None
 
 
 def _get_config_value(
@@ -366,7 +330,7 @@ async def run_agent_task(
         planner_llm_api_key = get_setting("planner_llm_api_key") or None
         planner_use_vision = get_setting("planner_use_vision", False)
 
-        planner_llm = await _initialize_llm(
+        planner_llm = await initialize_llm(  #(use shared initialize_llm utility)
             planner_llm_provider_name,
             planner_llm_model_name,
             planner_llm_temperature,
@@ -411,7 +375,7 @@ async def run_agent_task(
         os.makedirs(save_download_path, exist_ok=True)
 
     # --- 2. Initialize LLM ---
-    main_llm = await _initialize_llm(
+    main_llm = await initialize_llm(  #(use shared initialize_llm utility)
         llm_provider_name,
         llm_model_name,
         llm_temperature,
