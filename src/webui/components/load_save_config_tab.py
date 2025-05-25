@@ -1,8 +1,8 @@
+import asyncio
 import gradio as gr
 from gradio.components import Component
 
 from src.webui.webui_manager import WebuiManager
-from src.utils import config
 
 
 def create_load_save_config_tab(webui_manager: WebuiManager):
@@ -15,7 +15,8 @@ def create_load_save_config_tab(webui_manager: WebuiManager):
     # Load most recent config on startup
     most_recent = webui_manager.get_most_recent_config()
     if most_recent:
-        asyncio.create_task(webui_manager.load_config(most_recent))
+        for _ in webui_manager.load_config(most_recent):
+            pass
 
     with gr.Row():
         with gr.Column(scale=1):
