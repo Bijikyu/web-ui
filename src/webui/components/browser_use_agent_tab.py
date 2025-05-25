@@ -288,26 +288,21 @@ async def run_agent_task(
     }
 
     # --- Agent Settings ---
-    # Access settings values via components dict, getting IDs from webui_manager
-    def get_setting(key, default=None):
-        comp = webui_manager.id_to_component.get(f"agent_settings.{key}")
-        return components.get(comp, default) if comp else default
+    # Access settings values using WebuiManager helper
 
-    override_system_prompt = get_setting("override_system_prompt") or None
-    extend_system_prompt = get_setting("extend_system_prompt") or None
-    llm_provider_name = get_setting(
-        "llm_provider", None
-    )  # Default to None if not found
-    llm_model_name = get_setting("llm_model_name", None)
-    llm_temperature = get_setting("llm_temperature", 0.6)
-    use_vision = get_setting("use_vision", True)
-    ollama_num_ctx = get_setting("ollama_num_ctx", 16000)
-    llm_base_url = get_setting("llm_base_url") or None
-    llm_api_key = get_setting("llm_api_key") or None
-    max_steps = get_setting("max_steps", 100)
-    max_actions = get_setting("max_actions", 10)
-    max_input_tokens = get_setting("max_input_tokens", 128000)
-    tool_calling_str = get_setting("tool_calling_method", "auto")
+    override_system_prompt = webui_manager.get_component_value(components, "agent_settings", "override_system_prompt") or None
+    extend_system_prompt = webui_manager.get_component_value(components, "agent_settings", "extend_system_prompt") or None
+    llm_provider_name = webui_manager.get_component_value(components, "agent_settings", "llm_provider", None)  # Default to None if not found
+    llm_model_name = webui_manager.get_component_value(components, "agent_settings", "llm_model_name", None)
+    llm_temperature = webui_manager.get_component_value(components, "agent_settings", "llm_temperature", 0.6)
+    use_vision = webui_manager.get_component_value(components, "agent_settings", "use_vision", True)
+    ollama_num_ctx = webui_manager.get_component_value(components, "agent_settings", "ollama_num_ctx", 16000)
+    llm_base_url = webui_manager.get_component_value(components, "agent_settings", "llm_base_url") or None
+    llm_api_key = webui_manager.get_component_value(components, "agent_settings", "llm_api_key") or None
+    max_steps = webui_manager.get_component_value(components, "agent_settings", "max_steps", 100)
+    max_actions = webui_manager.get_component_value(components, "agent_settings", "max_actions", 10)
+    max_input_tokens = webui_manager.get_component_value(components, "agent_settings", "max_input_tokens", 128000)
+    tool_calling_str = webui_manager.get_component_value(components, "agent_settings", "tool_calling_method", "auto")
     tool_calling_method = tool_calling_str if tool_calling_str != "None" else None
     mcp_server_config_comp = webui_manager.id_to_component.get(
         "agent_settings.mcp_server_config"
@@ -320,15 +315,15 @@ async def run_agent_task(
     )
 
     # Planner LLM Settings (Optional)
-    planner_llm_provider_name = get_setting("planner_llm_provider") or None
+    planner_llm_provider_name = webui_manager.get_component_value(components, "agent_settings", "planner_llm_provider") or None
     planner_llm = None
     if planner_llm_provider_name:
-        planner_llm_model_name = get_setting("planner_llm_model_name")
-        planner_llm_temperature = get_setting("planner_llm_temperature", 0.6)
-        planner_ollama_num_ctx = get_setting("planner_ollama_num_ctx", 16000)
-        planner_llm_base_url = get_setting("planner_llm_base_url") or None
-        planner_llm_api_key = get_setting("planner_llm_api_key") or None
-        planner_use_vision = get_setting("planner_use_vision", False)
+        planner_llm_model_name = webui_manager.get_component_value(components, "agent_settings", "planner_llm_model_name")
+        planner_llm_temperature = webui_manager.get_component_value(components, "agent_settings", "planner_llm_temperature", 0.6)
+        planner_ollama_num_ctx = webui_manager.get_component_value(components, "agent_settings", "planner_ollama_num_ctx", 16000)
+        planner_llm_base_url = webui_manager.get_component_value(components, "agent_settings", "planner_llm_base_url") or None
+        planner_llm_api_key = webui_manager.get_component_value(components, "agent_settings", "planner_llm_api_key") or None
+        planner_use_vision = webui_manager.get_component_value(components, "agent_settings", "planner_use_vision", False)
 
         planner_llm = await initialize_llm(  #(use shared initialize_llm utility)
             planner_llm_provider_name,
@@ -340,28 +335,26 @@ async def run_agent_task(
         )
 
     # --- Browser Settings ---
-    def get_browser_setting(key, default=None):
-        comp = webui_manager.id_to_component.get(f"browser_settings.{key}")
-        return components.get(comp, default) if comp else default
+    # Access browser settings using WebuiManager helper
 
-    browser_binary_path = get_browser_setting("browser_binary_path") or None
-    browser_user_data_dir = get_browser_setting("browser_user_data_dir") or None
-    use_own_browser = get_browser_setting(
-        "use_own_browser", False
+    browser_binary_path = webui_manager.get_component_value(components, "browser_settings", "browser_binary_path") or None
+    browser_user_data_dir = webui_manager.get_component_value(components, "browser_settings", "browser_user_data_dir") or None
+    use_own_browser = webui_manager.get_component_value(
+        components, "browser_settings", "use_own_browser", False
     )  # Logic handled by CDP/WSS presence
-    keep_browser_open = get_browser_setting("keep_browser_open", False)
-    headless = get_browser_setting("headless", False)
-    disable_security = get_browser_setting("disable_security", True)
-    window_w = int(get_browser_setting("window_w", 1280))
-    window_h = int(get_browser_setting("window_h", 1100))
-    cdp_url = get_browser_setting("cdp_url") or None
-    wss_url = get_browser_setting("wss_url") or None
-    save_recording_path = get_browser_setting("save_recording_path") or None
-    save_trace_path = get_browser_setting("save_trace_path") or None
-    save_agent_history_path = get_browser_setting(
-        "save_agent_history_path", "./tmp/agent_history"
+    keep_browser_open = webui_manager.get_component_value(components, "browser_settings", "keep_browser_open", False)
+    headless = webui_manager.get_component_value(components, "browser_settings", "headless", False)
+    disable_security = webui_manager.get_component_value(components, "browser_settings", "disable_security", True)
+    window_w = int(webui_manager.get_component_value(components, "browser_settings", "window_w", 1280))
+    window_h = int(webui_manager.get_component_value(components, "browser_settings", "window_h", 1100))
+    cdp_url = webui_manager.get_component_value(components, "browser_settings", "cdp_url") or None
+    wss_url = webui_manager.get_component_value(components, "browser_settings", "wss_url") or None
+    save_recording_path = webui_manager.get_component_value(components, "browser_settings", "save_recording_path") or None
+    save_trace_path = webui_manager.get_component_value(components, "browser_settings", "save_trace_path") or None
+    save_agent_history_path = webui_manager.get_component_value(
+        components, "browser_settings", "save_agent_history_path", "./tmp/agent_history"
     )
-    save_download_path = get_browser_setting("save_download_path", "./tmp/downloads")
+    save_download_path = webui_manager.get_component_value(components, "browser_settings", "save_download_path", "./tmp/downloads")
 
     stream_vw = 70
     stream_vh = int(70 * window_h // window_w)
