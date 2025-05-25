@@ -70,8 +70,6 @@ async def run_single_browser_task(
     headless = browser_config.get("headless", False)
     window_w = browser_config.get("window_width", 1280)
     window_h = browser_config.get("window_height", 1100)
-    browser_user_data_dir = browser_config.get("user_data_dir", None)
-    use_own_browser = browser_config.get("use_own_browser", False)
     browser_binary_path = browser_config.get("browser_binary_path", None)
     wss_url = browser_config.get("wss_url", None)
     cdp_url = browser_config.get("cdp_url", None)
@@ -81,7 +79,7 @@ async def run_single_browser_task(
     bu_browser_context = None
     try:
         logger.info(f"Starting browser task for query: {task_query}")
-        browser_binary_path, extra_args = build_browser_launch_options(browser_config)  # // use util to build launch options
+        browser_binary_path, extra_args = build_browser_launch_options(browser_config)  # // util handles user data dir & own browser
 
         bu_browser = CustomBrowser(
             config=BrowserConfig(
