@@ -222,6 +222,16 @@ CHROME_PERSISTENT_SESSION=true docker compose up --build
    docker compose down
    ```
 
+## Examples and Manual Integration Tests
+Long-running or interactive scripts are in the `examples/` directory. These scripts
+show manual browser interactions and are not run with `pytest`.
+
+```bash
+cd examples
+python test_agents.py
+python test_playwright.py
+```
+
 ## Changelog
 - [x] **2025/01/26:** Thanks to @vvincent1234. Now browser-use-webui can combine with DeepSeek-r1 to engage in deep thinking!
 - [x] **2025/01/10:** Thanks to @casistack. Now we have Docker Setup option and also Support keep browser open between tasks.[Video tutorial demo](https://github.com/browser-use/web-ui/issues/1#issuecomment-2582511750).
