@@ -2,6 +2,7 @@ import asyncio  # use asyncio for running async methods
 import json  # for cookie file
 import sys  # to inject stubs
 import types  # create stub modules
+from unittest.mock import mock_open, patch  # patch utilities for tests
 sys.path.append(".")  # allow src imports
 from types import SimpleNamespace  # for simple objects
 
@@ -109,3 +110,17 @@ def test_load_cookies_and_scripts(tmp_path):
     assert pw_browser.new_called  # context created
     assert ctx.added_cookies == [{"name": "a", "value": "1", "sameSite": "None"}]  # cookie fixed
     assert any("navigator" in s for s in ctx.init_scripts)  # script injected
+
+def test_malformed_cookies_file(monkeypatch):
+    pw_browser = DummyPWBrowser()  # stub PlaywrightBrowser
+    browser = BrowserBase(SimpleNamespace(cdp_url=None, browser_binary_path=None))  # browser without reuse condition
+    cfg = make_config(cookies_file="bad.json")  # config with bad cookie file
+    cb_ctx = CustomBrowserContext(browser=browser, config=cfg)  # instance under test
+    bad = "{invalid"  # malformed json text
+    with patch("os.path.exists", return_value=True):  # pretend file exists
+        with patch("builtins.open", mock_open(read_data=bad)):  # provide bad json
+            with patch.object(custom_context, "logger") as log:  # capture logger
+                ctx = asyncio.run(cb_ctx._create_context(pw_browser))  # create context
+                log.error.assert_called()  # verify error logged
+    assert pw_browser.new_called  # context created despite error
+    assert ctx.added_cookies is None  # add_cookies not called
