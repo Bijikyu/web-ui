@@ -1,10 +1,14 @@
-import pdb
+import logging  # (replaced pdb import with logging)
+import pytest  # (needed for skipping heavy tests)
 from dotenv import load_dotenv
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)  # (added logger for debug output)
 
-def test_connect_browser():
+
+@pytest.mark.skip(reason="requires manual browser interaction")
+def test_connect_browser():  # (skip heavy browser test)
     import os
     from patchright.sync_api import sync_playwright
 
@@ -21,9 +25,7 @@ def test_connect_browser():
         page = browser.new_page()
         page.goto("https://mail.google.com/mail/u/0/#inbox")
         page.wait_for_load_state()
-
-        input("Press the Enter key to close the browser...")
-
+        logger.debug("Browser page loaded")  # (added debug log in place of manual pause)
         browser.close()
 
 

@@ -1,5 +1,6 @@
 import asyncio
-import pdb
+import logging  # (replaced pdb import with logging)
+import pytest  # (needed for skipping heavy tests)
 import sys
 import time
 
@@ -9,8 +10,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)  # (added logger for debug output)
 
-async def test_mcp_client():
+
+@pytest.mark.skip(reason="requires MCP servers and manual checks")
+async def test_mcp_client():  # (skip heavy MCP test)
     from src.utils.mcp_client import setup_mcp_client_and_tools, create_tool_param_model
 
     test_server_config = {
@@ -38,10 +42,11 @@ async def test_mcp_client():
         print(tool.name)
         print(tool.description)
         print(tool_param_model.model_json_schema())
-    pdb.set_trace()
+    logger.debug("MCP client tools enumerated")  # (replaced manual breakpoint with debug log)
 
 
-async def test_controller_with_mcp():
+@pytest.mark.skip(reason="requires MCP servers and manual checks")
+async def test_controller_with_mcp():  # (skip heavy MCP integration test)
     import os
     from src.controller.custom_controller import CustomController
     from browser_use.controller.registry.views import ActionModel
@@ -100,19 +105,19 @@ async def test_controller_with_mcp():
         params = {"pid": pid}
         validated_params = param_model(**params)
         action_model = ActionModel_(**{action_name: validated_params})
-        output_result = ""
-        while True:
+        output_result = ""  # (initialize output result)
+        end_time = time.time() + 5  # (timeout to avoid hanging)
+        while time.time() < end_time:
             time.sleep(1)
             result = await controller.act(action_model)
             result = result.extracted_content
             if result:
-                pdb.set_trace()
-                output_result = result
+                output_result = result  # (capture command output)
                 break
         print(output_result)
-        pdb.set_trace()
+        assert output_result  # (ensure some output was returned)
     await controller.close_mcp_client()
-    pdb.set_trace()
+    logger.debug("MCP client closed")  # (removed final breakpoint)
 
 
 if __name__ == '__main__':
