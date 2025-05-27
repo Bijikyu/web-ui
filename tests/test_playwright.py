@@ -1,7 +1,11 @@
 import pdb
+import pytest  # (import for importorskip)
+pytest.importorskip("dotenv", reason="python-dotenv required")  # (skip if dotenv missing)
 from dotenv import load_dotenv
 
 load_dotenv()
+
+pytest.importorskip("patchright", reason="patchright is required")  # (skip if patchright missing)
 
 
 def test_connect_browser():

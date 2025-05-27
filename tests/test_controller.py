@@ -2,12 +2,16 @@ import asyncio
 import pdb
 import sys
 import time
+import pytest  # (import for importorskip)
+pytest.importorskip("dotenv", reason="python-dotenv required")  # (skip if dotenv missing)
 
 sys.path.append(".")
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+pytest.importorskip("browser_use", reason="browser-use required")  # (skip if browser_use missing)
 
 
 async def test_mcp_client():

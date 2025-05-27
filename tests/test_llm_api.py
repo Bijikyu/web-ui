@@ -2,8 +2,11 @@ import os
 import pdb
 from dataclasses import dataclass
 
+import pytest  # (import for importorskip)
+pytest.importorskip("dotenv", reason="python-dotenv required")  # (skip if dotenv missing)
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, SystemMessage
+pytest.importorskip("langchain_ollama", reason="langchain-ollama required")  # (skip if langchain-ollama missing)
 from langchain_ollama import ChatOllama
 
 load_dotenv()

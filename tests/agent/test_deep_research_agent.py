@@ -20,7 +20,6 @@ def setup_stubs():
         'src.browser.custom_context': types.ModuleType('src.browser.custom_context'),
         'src.controller.custom_controller': types.ModuleType('src.controller.custom_controller'),
         'src.utils.mcp_client': types.ModuleType('src.utils.mcp_client'),
-        'src.utils.browser_launch': types.ModuleType('src.utils.browser_launch'),
     }
     modules['browser_use.browser.browser'].BrowserConfig = type('BrowserConfig', (), {})
     fm = modules['langchain_community.tools.file_management']
@@ -52,7 +51,6 @@ def setup_stubs():
     modules['src.browser.custom_context'].CustomBrowserContextConfig = type('CustomBrowserContextConfig', (), {})
     modules['src.controller.custom_controller'].CustomController = type('CustomController', (), {})
     modules['src.utils.mcp_client'].setup_mcp_client_and_tools = lambda *a, **k: None
-    modules['src.utils.browser_launch'].build_browser_launch_options = lambda *a, **k: (None, [])
     for name, mod in modules.items():
         sys.modules.setdefault(name, mod)
 
