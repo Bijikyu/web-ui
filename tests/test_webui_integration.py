@@ -1,6 +1,6 @@
 import importlib  #(used to check gradio availability)
 import asyncio
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock  # (import MagicMock for new test)
 
 import pytest
 
@@ -45,4 +45,27 @@ async def test_launch_and_callbacks(monkeypatch):
 
     assert run_mock.call_count == 0  # callbacks not triggered yet
     assert stop_mock.call_count == 0
+
+
+def test_tab_functions_invoked(monkeypatch):
+    """Ensure each tab creation function runs once during UI build."""  # (check create_ui wiring)
+    create_agent = MagicMock(return_value=None)  # (mock agent settings tab)
+    create_browser = MagicMock(return_value=None)  # (mock browser settings tab)
+    create_run = MagicMock(return_value=None)  # (mock browser use agent tab)
+    create_deep = MagicMock(return_value=None)  # (mock deep research agent tab)
+    create_config = MagicMock(return_value=None)  # (mock load save config tab)
+
+    monkeypatch.setattr("src.webui.interface.create_agent_settings_tab", create_agent)  # (patch agent tab maker)
+    monkeypatch.setattr("src.webui.interface.create_browser_settings_tab", create_browser)  # (patch browser tab maker)
+    monkeypatch.setattr("src.webui.interface.create_browser_use_agent_tab", create_run)  # (patch run tab maker)
+    monkeypatch.setattr("src.webui.interface.create_deep_research_agent_tab", create_deep)  # (patch deep tab maker)
+    monkeypatch.setattr("src.webui.interface.create_load_save_config_tab", create_config)  # (patch config tab maker)
+
+    create_ui()  # (build UI to trigger patched functions)
+
+    assert create_agent.call_count == 1  # (agent settings called once)
+    assert create_browser.call_count == 1  # (browser settings called once)
+    assert create_run.call_count == 1  # (run agent called once)
+    assert create_deep.call_count == 1  # (deep research called once)
+    assert create_config.call_count == 1  # (load/save config called once)
 
