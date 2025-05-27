@@ -85,15 +85,15 @@ async def run_deep_research(webui_manager: WebuiManager, components: Dict[Compon
 
     try:
         # --- 3. Get LLM and Browser Config from other tabs ---
-        # Access settings values via webui_manager  //(remove nested helper and use webui_manager API)
+        # Access settings values via webui_manager  # (remove nested helper and use webui_manager API)
 
         # LLM Config (from agent_settings tab)
-        llm_provider_name = webui_manager.get_component_value(components, "agent_settings", "llm_provider")  //(use webui_manager to read llm provider)
-        llm_model_name = webui_manager.get_component_value(components, "agent_settings", "llm_model_name")  //(use webui_manager to read llm model)
-        llm_temperature = webui_manager.get_component_value(components, "agent_settings", "llm_temperature", 0.5)  # Default if not found //(use new accessor with default)
-        llm_base_url = webui_manager.get_component_value(components, "agent_settings", "llm_base_url")  //(use webui_manager to read base url)
-        llm_api_key = webui_manager.get_component_value(components, "agent_settings", "llm_api_key")  //(use webui_manager to read api key)
-        ollama_num_ctx = webui_manager.get_component_value(components, "agent_settings", "ollama_num_ctx")  //(use webui_manager to read context size)
+        llm_provider_name = webui_manager.get_component_value(components, "agent_settings", "llm_provider")  # (use webui_manager to read llm provider)
+        llm_model_name = webui_manager.get_component_value(components, "agent_settings", "llm_model_name")  # (use webui_manager to read llm model)
+        llm_temperature = webui_manager.get_component_value(components, "agent_settings", "llm_temperature", 0.5)  # Default if not found # (use new accessor with default)
+        llm_base_url = webui_manager.get_component_value(components, "agent_settings", "llm_base_url")  # (use webui_manager to read base url)
+        llm_api_key = webui_manager.get_component_value(components, "agent_settings", "llm_api_key")  # (use webui_manager to read api key)
+        ollama_num_ctx = webui_manager.get_component_value(components, "agent_settings", "ollama_num_ctx")  # (use webui_manager to read context size)
 
         llm = await initialize_llm(  #(use shared initialize_llm utility)
             llm_provider_name, llm_model_name, llm_temperature, llm_base_url, llm_api_key,
@@ -104,7 +104,7 @@ async def run_deep_research(webui_manager: WebuiManager, components: Dict[Compon
 
         # Browser Config (from browser_settings tab)
         # Note: DeepResearchAgent constructor takes a dict, not full Browser/Context objects
-        browser_config_dict = {  //(load browser config from ui via webui_manager)
+        browser_config_dict = {  # (load browser config from ui via webui_manager)
             "headless": webui_manager.get_component_value(components, "browser_settings", "headless", False),
             "disable_security": webui_manager.get_component_value(components, "browser_settings", "disable_security", True),
             "browser_binary_path": webui_manager.get_component_value(components, "browser_settings", "browser_binary_path"),
