@@ -1,5 +1,4 @@
 import asyncio
-import pdb
 
 from patchright.async_api import Browser as PlaywrightBrowser
 from patchright.async_api import (
