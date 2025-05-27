@@ -1,10 +1,20 @@
+
+import pdb
+import pytest  # (import for importorskip)
+pytest.importorskip("dotenv", reason="python-dotenv required")  # (skip if dotenv missing)
+
 import logging  # (replaced pdb import with logging)
-import pytest  # (needed for skipping heavy tests)
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
+
+pytest.importorskip("patchright", reason="patchright is required")  # (skip if patchright missing)
+
+
 logger = logging.getLogger(__name__)  # (added logger for debug output)
+
 
 
 @pytest.mark.skip(reason="requires manual browser interaction")

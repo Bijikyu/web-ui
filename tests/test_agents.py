@@ -1,8 +1,12 @@
 import pdb
+import pytest  # (import for importorskip)
+pytest.importorskip("dotenv", reason="python-dotenv required")  # (skip if dotenv missing)
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+pytest.importorskip("browser_use", reason="browser-use required")  # (skip if browser_use missing)
 import sys
 
 sys.path.append(".")
@@ -167,6 +171,7 @@ async def test_browser_use_agent():
 
 
 async def test_browser_use_parallel():
+    pytest.importorskip("patchright", reason="patchright required")  # (skip if patchright missing)
     from browser_use.browser.context import BrowserContextWindowSize
     from browser_use.browser.browser import BrowserConfig
     from patchright.async_api import async_playwright

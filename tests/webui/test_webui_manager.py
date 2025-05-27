@@ -77,6 +77,8 @@ from src.webui.webui_manager import WebuiManager
 @pytest.fixture(autouse=True)
 def patch_gradio(monkeypatch):
     from src import webui
+    if webui.webui_manager is None:
+        pytest.skip("webui_manager unavailable", allow_module_level=True)  # (skip if gradio missing)
     monkeypatch.setattr(webui.webui_manager.gr, "Button", DummyButton)
     monkeypatch.setattr(webui.webui_manager.gr, "File", DummyFile)
     yield

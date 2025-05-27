@@ -3,6 +3,8 @@ import logging  # (replaced pdb import with logging)
 import pytest  # (needed for skipping heavy tests)
 import sys
 import time
+import pytest  # (import for importorskip)
+pytest.importorskip("dotenv", reason="python-dotenv required")  # (skip if dotenv missing)
 
 sys.path.append(".")
 
@@ -10,7 +12,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+pytest.importorskip("browser_use", reason="browser-use required")  # (skip if browser_use missing)
+
+
 logger = logging.getLogger(__name__)  # (added logger for debug output)
+
 
 
 @pytest.mark.skip(reason="requires MCP servers and manual checks")

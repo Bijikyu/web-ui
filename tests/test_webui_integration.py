@@ -7,6 +7,10 @@ import pytest
 
 skip_msg = "gradio is required for this test"
 gradio = pytest.importorskip("gradio", reason=skip_msg)
+try:
+    from browser_use.agent.views import AgentHistoryList  # (check for full browser_use install)
+except Exception:
+    pytest.skip("browser-use package is required for this test", allow_module_level=True)  # (skip if missing)
 
 from src.webui.interface import create_ui
 
