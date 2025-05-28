@@ -9,6 +9,10 @@ import gradio as gr
 import uuid
 
 
+def ensure_dir(path: str):
+    os.makedirs(path, exist_ok=True)  # create directory if missing
+
+
 def encode_image(img_path):
     if not img_path:
         return None
@@ -22,7 +26,7 @@ def get_latest_files(directory: str, file_types: list = ['.webm', '.zip']) -> Di
     latest_files: Dict[str, Optional[str]] = {ext: None for ext in file_types}
 
     if not os.path.exists(directory):
-        os.makedirs(directory, exist_ok=True)
+        ensure_dir(directory)  # create dir on demand
         return latest_files
 
     for file_type in file_types:

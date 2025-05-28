@@ -6,7 +6,11 @@ from src.webui.webui_manager import WebuiManager
 from src.utils import config
 import logging
 import os
+
+from src.utils.utils import ensure_dir  # // import directory helper
+
 from src.utils.file_utils import load_mcp_server_config  # shared mcp loader
+
 from typing import Any, Dict, AsyncGenerator, Optional, Tuple, Union
 import asyncio
 import json
@@ -63,7 +67,7 @@ async def run_deep_research(webui_manager: WebuiManager, components: Dict[Compon
 
     # Store base save dir for stop handler
     webui_manager.dr_save_dir = base_save_dir
-    os.makedirs(base_save_dir, exist_ok=True)
+    ensure_dir(base_save_dir)  # // ensure base save dir exists
 
     # --- 2. Initial UI Update ---
     yield {

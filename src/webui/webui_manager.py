@@ -18,6 +18,7 @@ from src.browser.custom_browser import CustomBrowser
 from src.browser.custom_context import CustomBrowserContext
 from src.controller.custom_controller import CustomController
 from src.agent.deep_research.deep_research_agent import DeepResearchAgent
+from src.utils.utils import ensure_dir  # utility to guarantee directories
 
 
 class WebuiManager:
@@ -26,7 +27,7 @@ class WebuiManager:
         self.component_to_id: dict[Component, str] = {}
 
         self.settings_save_dir = settings_save_dir
-        os.makedirs(self.settings_save_dir, exist_ok=True)
+        ensure_dir(self.settings_save_dir)  # // ensure dir exists
 
     def init_browser_use_agent(self) -> None:
         """

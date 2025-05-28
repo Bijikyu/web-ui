@@ -52,7 +52,7 @@ def test_get_latest_files():  # latest per extension
 
 def test_get_latest_files_missing_dir():  # dir absent handling
     with patch('os.path.exists', return_value=False):  # simulate missing dir
-        with patch('os.makedirs') as mk:  # patch makedirs
+        with patch('src.utils.utils.ensure_dir') as mk:  # patch dir helper
             result = get_latest_files('/missing')  # call util
-            mk.assert_called_once_with('/missing', exist_ok=True)  # ensure called
+            mk.assert_called_once_with('/missing')  # ensure called
     assert result == {'.webm': None, '.zip': None}  # expect empty dict

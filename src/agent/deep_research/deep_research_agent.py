@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import threading
+from src.utils.utils import ensure_dir  # // directory helper import
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TypedDict
@@ -989,7 +990,7 @@ class DeepResearchAgent:
 
         self.current_task_id = task_id if task_id else str(uuid.uuid4())
         output_dir = os.path.join(save_dir, self.current_task_id)
-        os.makedirs(output_dir, exist_ok=True)
+        ensure_dir(output_dir)  # // ensure output dir exists
 
         logger.info(
             f"[AsyncGen] Starting research task ID: {self.current_task_id} for topic: '{topic}'"
