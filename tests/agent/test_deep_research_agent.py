@@ -20,11 +20,34 @@ def setup_stubs():
         'src.browser.custom_context': types.ModuleType('src.browser.custom_context'),
         'src.controller.custom_controller': types.ModuleType('src.controller.custom_controller'),
         'src.utils.mcp_client': types.ModuleType('src.utils.mcp_client'),
+        'requests': types.ModuleType('requests'),  # // stub requests module to satisfy imports
+        'gradio': types.ModuleType('gradio'),  # // stub gradio for utilities
     }
     modules['browser_use.browser.browser'].BrowserConfig = type('BrowserConfig', (), {})
     fm = modules['langchain_community.tools.file_management']
     for name in ['ListDirectoryTool', 'ReadFileTool', 'WriteFileTool']:
-        setattr(fm, name, type(name, (), {}))
+        Tool = type(name, (), {  # provide minimal tool class
+            '__init__': lambda self, n=name: setattr(self, 'name', n)  # // set name attribute on tool instance
+        })
+        setattr(fm, name, Tool)
+    gr = modules['gradio']
+    class DummyComp:
+        def __init__(self, *a, **k):
+            self.fn = None
+        def change(self, fn):
+            self.fn = fn
+        def click(self, fn=None, inputs=None, outputs=None):
+            self.fn = fn
+    for attr in ['Group', 'Row', 'Column', 'Textbox', 'Checkbox', 'Number', 'Button', 'File']:
+        if attr in ['Group', 'Row', 'Column']:
+            cls = type(attr, (DummyComp,), {
+                '__enter__': lambda self: self,
+                '__exit__': lambda self, exc_type, exc, tb: None,
+            })
+        else:
+            cls = type(attr, (DummyComp,), {})
+        setattr(gr, attr, cls)
+    gr.components = types.ModuleType('gradio.components')  # // attach components module placeholder
     msgs = modules['langchain_core.messages']
     for name in ['AIMessage', 'BaseMessage', 'HumanMessage', 'SystemMessage', 'ToolMessage']:
         setattr(msgs, name, type(name, (), {}))
@@ -113,3 +136,55 @@ def test_save_report_to_md(tmp_path):
     dr._save_report_to_md('hello', tmp_path)
     report = tmp_path / dr.REPORT_FILENAME
     assert report.read_text() == 'hello'
+
+
+def test_load_previous_state_invalid(tmp_path):
+    (tmp_path / dr.PLAN_FILENAME).write_text('- [ ] task\n')  # // create plan file for loading
+    (tmp_path / dr.SEARCH_INFO_FILENAME).write_text('{bad')  # // invalid json should trigger error
+    state = dr._load_previous_state('tid', str(tmp_path))
+    assert 'search_results' not in state  # // search results omitted on parse fail
+    assert 'error_message' in state and 'Failed to load search results' in state['error_message']  # // error message surfaced
+
+
+def test_save_plan_and_search_files(tmp_path):
+    plan = [
+        {'step': 1, 'task': 'a', 'status': 'pending', 'queries': None, 'result_summary': None},
+        {'step': 2, 'task': 'b', 'status': 'completed', 'queries': None, 'result_summary': None},
+    ]
+    dr._save_plan_to_md(plan, str(tmp_path))
+    text = (tmp_path / dr.PLAN_FILENAME).read_text()
+    assert '- [ ] a' in text and '- [x] b' in text  # // verify tasks and markers saved
+
+    results = [{'query': 'q', 'result': 'r'}]
+    dr._save_search_results_to_json(results, str(tmp_path))
+    saved = json.loads((tmp_path / dr.SEARCH_INFO_FILENAME).read_text())
+    assert saved == results  # // json saved correctly
+
+
+def test_setup_tools(monkeypatch):
+    monkeypatch.setattr(dr.DeepResearchAgent, '_compile_graph', lambda self: None)  # // avoid constructing StateGraph
+    agent = dr.DeepResearchAgent('llm', {'b': True})
+    monkeypatch.setattr(dr, 'create_browser_search_tool', lambda *a, **k: types.SimpleNamespace(name='browser'))  # // replace browser tool factory
+    tools = asyncio.run(agent._setup_tools('tid', threading.Event()))
+    names = {t.name for t in tools}
+    assert names == {'WriteFileTool', 'ReadFileTool', 'ListDirectoryTool', 'browser'}  # // default tools built
+
+
+def test_setup_tools_with_mcp(monkeypatch):
+    class DummyClient:
+        def get_tools(self):
+            return [types.SimpleNamespace(name='mcp')]
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    async def fake_setup(config):
+        return DummyClient()
+
+    monkeypatch.setattr(dr.DeepResearchAgent, '_compile_graph', lambda self: None)  # // avoid constructing StateGraph
+    agent = dr.DeepResearchAgent('llm', {'b': True}, mcp_server_config={'url': 'x'})
+    monkeypatch.setattr(dr, 'create_browser_search_tool', lambda *a, **k: types.SimpleNamespace(name='browser'))  # // replace browser tool factory
+    monkeypatch.setattr(dr, 'setup_mcp_client_and_tools', fake_setup)  # // fake mcp tool setup
+    tools = asyncio.run(agent._setup_tools('tid', threading.Event()))
+    names = {t.name for t in tools}
+    assert 'mcp' in names and 'browser' in names  # // mcp tools included
+
