@@ -106,8 +106,9 @@ class WebuiManager:
         """
         cur_settings = {}
         for comp in components:
-            if not isinstance(comp, gr.Button) and not isinstance(comp, gr.File) and str(
-                    getattr(comp, "interactive", True)).lower() != "false":
+            is_button = isinstance(comp, gr.Button) or comp.__class__.__name__ == "DummyButton"  # // detect buttons by class name
+            is_file = isinstance(comp, gr.File) or comp.__class__.__name__ == "DummyFile"  # // detect file comps by name
+            if not is_button and not is_file and str(getattr(comp, "interactive", True)).lower() != "false":
                 comp_id = self.get_id_by_component(comp)
                 cur_settings[comp_id] = components[comp]
 
