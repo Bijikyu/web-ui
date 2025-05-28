@@ -5,6 +5,39 @@ import threading
 import json
 import pytest
 sys.path.append(".")
+sys.modules.setdefault("requests", types.ModuleType("requests"))  # (stub requests)
+gradio_stub = types.ModuleType("gradio")  # (create gradio stub)
+class Group:  # (context manager class)
+    def __init__(self, *args, **kwargs):
+        pass
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc, tb):
+        pass
+class Row(Group):
+    pass
+class Column(Group):
+    pass
+class DummyComp:
+    def __init__(self, *args, **kwargs):
+        self.fn = None
+    def change(self, fn):
+        self.fn = fn
+    def click(self, fn=None, inputs=None, outputs=None):
+        self.fn = fn
+class Checkbox(DummyComp):
+    pass
+class Textbox(DummyComp):
+    pass
+class Number(DummyComp):
+    pass
+gradio_stub.Group = Group
+gradio_stub.Row = Row
+gradio_stub.Column = Column
+gradio_stub.Checkbox = Checkbox
+gradio_stub.Textbox = Textbox
+gradio_stub.Number = Number
+sys.modules["gradio"] = gradio_stub  # (register gradio stub)
 
 def setup_stubs():
     modules = {
@@ -56,6 +89,7 @@ def setup_stubs():
 
 setup_stubs()
 from src.agent.deep_research import deep_research_agent as dr
+sys.modules.pop("gradio", None)  # (remove stub so other tests can override)
 
 def test_run_browser_search_tool(monkeypatch):
     async def fake_task(query, task_id, llm, browser_config, stop_event):

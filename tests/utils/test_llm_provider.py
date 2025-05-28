@@ -95,3 +95,41 @@ def test_ollama_custom_params(monkeypatch):
     assert isinstance(model, llm_provider.ChatOllama)  # (instance check)
     assert model.kwargs['base_url'] == 'http://ollama'  # (verify base_url)
     assert model.kwargs['temperature'] == 0.1  # (verify temperature)
+
+
+def test_deepseek_default(monkeypatch):
+    monkeypatch.setenv('DEEPSEEK_API_KEY', 'ds-key')  # (set env var)
+    model = llm_provider.get_llm_model(
+        'deepseek', base_url='http://deep', model_name='deepseek-chat'
+    )  # (create deepseek model)
+    assert isinstance(model, llm_provider.ChatOpenAI)  # (instance check)
+    assert model.kwargs['base_url'] == 'http://deep'  # (verify base_url)
+
+
+def test_deepseek_reasoner(monkeypatch):
+    monkeypatch.setenv('DEEPSEEK_API_KEY', 'ds-key')  # (set env var)
+    model = llm_provider.get_llm_model(
+        'deepseek', model_name='deepseek-reasoner', base_url='http://deep'
+    )  # (create reasoner model)
+    assert isinstance(model, llm_provider.DeepSeekR1ChatOpenAI)  # (instance check)
+    assert model.kwargs['base_url'] == 'http://deep'  # (verify base_url)
+
+
+def test_google_provider(monkeypatch):
+    monkeypatch.setenv('GOOGLE_API_KEY', 'gg-key')  # (set env var)
+    model = llm_provider.get_llm_model(
+        'google', temperature=0.2
+    )  # (create google model)
+    assert isinstance(model, llm_provider.ChatGoogleGenerativeAI)  # (instance check)
+    assert model.kwargs['temperature'] == 0.2  # (verify temperature)
+
+
+def test_unbound_provider(monkeypatch):
+    monkeypatch.setenv('UNBOUND_API_KEY', 'ub-key')  # (set env var)
+    monkeypatch.setenv('UNBOUND_ENDPOINT', 'http://unbound')  # (set endpoint)
+    model = llm_provider.get_llm_model(
+        'unbound', temperature=0.6
+    )  # (create unbound model)
+    assert isinstance(model, llm_provider.ChatOpenAI)  # (instance check)
+    assert model.kwargs['base_url'] == 'http://unbound'  # (verify base_url)
+    assert model.kwargs['temperature'] == 0.6  # (verify temperature)

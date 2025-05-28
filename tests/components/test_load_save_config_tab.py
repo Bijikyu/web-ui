@@ -4,6 +4,7 @@ import os  # (file operations)
 import time  # (set file modification times)
 
 sys.path.append(".")  # (allow importing src modules)
+sys.modules.setdefault("requests", types.ModuleType("requests"))  # (stub requests)
 
 # Stub gradio components
 stub = types.ModuleType("gradio")  # (create gradio module)
