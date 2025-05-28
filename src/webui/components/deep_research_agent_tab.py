@@ -6,7 +6,11 @@ from src.webui.webui_manager import WebuiManager
 from src.utils import config
 import logging
 import os
+
 from src.utils.utils import ensure_dir  # // import directory helper
+
+from src.utils.file_utils import load_mcp_server_config  # shared mcp loader
+
 from typing import Any, Dict, AsyncGenerator, Optional, Tuple, Union
 import asyncio
 import json
@@ -336,12 +340,9 @@ async def update_mcp_server(mcp_file: str, webui_manager: WebuiManager):
         logger.warning("⚠️ Close controller because mcp file has changed!")
         await webui_manager.dr_agent.close_mcp_client()
 
-    if not mcp_file or not os.path.exists(mcp_file) or not mcp_file.endswith('.json'):
-        logger.warning(f"{mcp_file} is not a valid MCP file.")
-        return None, gr.update(visible=False)
-
-    with open(mcp_file, 'r') as f:
-        mcp_server = json.load(f)
+    mcp_server = load_mcp_server_config(mcp_file, logger)  # use shared loader
+    if mcp_server is None:  # handle invalid config
+        return None, gr.update(visible=False)  # hide textbox on fail
 
     return json.dumps(mcp_server, indent=2), gr.update(visible=True)
 
