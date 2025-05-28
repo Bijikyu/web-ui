@@ -8,6 +8,7 @@ sys.path.append(".")
 def setup_stubs():
     """Insert stub modules for gradio and browser_use dependencies."""
     modules = {}
+    sys.modules.setdefault("requests", types.ModuleType("requests"))  # stub requests for manager import
 
     class DummyComponent:
         def __init__(self, value=None, interactive=True, visible=True, placeholder=None):
@@ -281,6 +282,126 @@ def test_run_agent_task_simple(tmp_path):
         assert not final_update[pause_button].interactive
         assert final_update[clear_button].interactive
         assert final_update[chatbot].value == manager.bu_chat_history
+
+    asyncio.run(runner())
+    for name, mod in {
+        "src.webui.webui_manager": orig_manager,
+        "src.webui.components.browser_use_agent_tab": orig_tab,
+    }.items():
+        if mod is None:
+            sys.modules.pop(name, None)
+        else:
+            sys.modules[name] = mod
+    teardown_stubs(modules)
+
+
+def test_run_agent_task_missing_input(tmp_path):
+    modules = setup_stubs()
+    orig_manager = sys.modules.pop("src.webui.webui_manager", None)
+    orig_tab = sys.modules.pop("src.webui.components.browser_use_agent_tab", None)
+    WebuiManager = importlib.import_module("src.webui.webui_manager").WebuiManager
+    bu_tab = importlib.import_module("src.webui.components.browser_use_agent_tab")
+
+    async def runner():
+        manager = WebuiManager(settings_save_dir=str(tmp_path))
+        manager.init_browser_use_agent()
+
+        user_input = modules["gradio"].Textbox()
+        run_button = modules["gradio"].Button()
+        stop_button = modules["gradio"].Button()
+        pause_button = modules["gradio"].Button()
+        clear_button = modules["gradio"].Button()
+        chatbot = modules["gradio"].Chatbot()
+        history_file = modules["gradio"].File()
+        gif = modules["gradio"].Image()
+        browser_view = modules["gradio"].HTML()
+        keep_open = modules["gradio"].Button()
+
+        manager.add_components(
+            "browser_use_agent",
+            {
+                "user_input": user_input,
+                "run_button": run_button,
+                "stop_button": stop_button,
+                "pause_resume_button": pause_button,
+                "clear_button": clear_button,
+                "chatbot": chatbot,
+                "agent_history_file": history_file,
+                "recording_gif": gif,
+                "browser_view": browser_view,
+            },
+        )
+        manager.add_components("browser_settings", {"keep_browser_open": keep_open})
+
+        components = {user_input: "", keep_open: True}
+
+        updates = [u async for u in bu_tab.run_agent_task(manager, components)]
+
+        assert len(updates) == 1
+        assert updates[0][run_button].interactive
+        assert manager.bu_browser is None
+        assert manager.bu_browser_context is None
+        assert manager.bu_chat_history == []
+
+    asyncio.run(runner())
+    for name, mod in {
+        "src.webui.webui_manager": orig_manager,
+        "src.webui.components.browser_use_agent_tab": orig_tab,
+    }.items():
+        if mod is None:
+            sys.modules.pop(name, None)
+        else:
+            sys.modules[name] = mod
+    teardown_stubs(modules)
+
+
+def test_run_agent_task_invalid_mcp_config(tmp_path):
+    modules = setup_stubs()
+    orig_manager = sys.modules.pop("src.webui.webui_manager", None)
+    orig_tab = sys.modules.pop("src.webui.components.browser_use_agent_tab", None)
+    WebuiManager = importlib.import_module("src.webui.webui_manager").WebuiManager
+    bu_tab = importlib.import_module("src.webui.components.browser_use_agent_tab")
+
+    async def runner():
+        manager = WebuiManager(settings_save_dir=str(tmp_path))
+        manager.init_browser_use_agent()
+
+        user_input = modules["gradio"].Textbox()
+        run_button = modules["gradio"].Button()
+        stop_button = modules["gradio"].Button()
+        pause_button = modules["gradio"].Button()
+        clear_button = modules["gradio"].Button()
+        chatbot = modules["gradio"].Chatbot()
+        history_file = modules["gradio"].File()
+        gif = modules["gradio"].Image()
+        browser_view = modules["gradio"].HTML()
+        keep_open = modules["gradio"].Button()
+        mcp_conf = modules["gradio"].Textbox()
+
+        manager.add_components(
+            "browser_use_agent",
+            {
+                "user_input": user_input,
+                "run_button": run_button,
+                "stop_button": stop_button,
+                "pause_resume_button": pause_button,
+                "clear_button": clear_button,
+                "chatbot": chatbot,
+                "agent_history_file": history_file,
+                "recording_gif": gif,
+                "browser_view": browser_view,
+            },
+        )
+        manager.add_components("browser_settings", {"keep_browser_open": keep_open})
+        manager.add_components("agent_settings", {"mcp_server_config": mcp_conf})
+
+        components = {user_input: "do", keep_open: True, mcp_conf: "{bad json"}
+
+        updates = [u async for u in bu_tab.run_agent_task(manager, components)]
+
+        assert len(updates) == 1
+        msg = updates[0][chatbot].value[-1]["content"]
+        assert msg.startswith("**Setup Error:**")
 
     asyncio.run(runner())
     for name, mod in {
