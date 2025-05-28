@@ -77,29 +77,16 @@ class Config:
         self.proxy = kwargs.get("proxy")
         self.browser_binary_path = kwargs.get("browser_binary_path")
 
-class DummySocket:
-    def __init__(self, ret):
-        self.ret = ret
-    def __enter__(self):
-        return self
-    def __exit__(self, exc_type, exc, tb):
-        pass
-    def connect_ex(self, addr):
-        return self.ret
-
-class FakeSocketModule:
-    def __init__(self, ret):
-        self.AF_INET = object()
-        self.SOCK_STREAM = object()
-        self.ret = ret
-    def socket(self, *a, **k):
-        return DummySocket(self.ret)
 
 def test_setup_builtin_browser_headless(monkeypatch):
     cfg = Config(headless=True, disable_security=True, deterministic_rendering=True, extra_browser_args=["--foo"])  # configuration for headless
     browser = CustomBrowser(config=cfg)  # create browser instance
     pw = Playwright()  # stub Playwright object
-    monkeypatch.setattr(custom_browser, "socket", FakeSocketModule(1))  # fake socket module
+    monkeypatch.setattr(
+        custom_browser.socket.socket,
+        "connect_ex",
+        lambda self, addr: 1,
+    )  # (mock socket connect_ex to indicate port free)
     asyncio.run(browser._setup_builtin_browser(pw))  # run setup
     args = set(pw.chromium.launch_kwargs["args"])  # grab args
     expected = {"--base", "--headless", "--no-sec", "--det", "--window-position=0,0", "--foo", "--window-size=1920,1080", "--remote-debugging-port=9222"}  # expected args
@@ -109,7 +96,11 @@ def test_setup_builtin_browser_port_conflict(monkeypatch):
     cfg = Config(headless=False, extra_browser_args=[])  # configuration no headless
     browser = CustomBrowser(config=cfg)  # create browser instance
     pw = Playwright()  # stub Playwright
-    monkeypatch.setattr(custom_browser, "socket", FakeSocketModule(0))  # fake socket module
+    monkeypatch.setattr(
+        custom_browser.socket.socket,
+        "connect_ex",
+        lambda self, addr: 0,
+    )  # (mock socket connect_ex to indicate port 9222 in use)
     asyncio.run(browser._setup_builtin_browser(pw))  # run setup
     args = set(pw.chromium.launch_kwargs["args"])  # captured args
     expected = {"--base", "--window-position=10,20", "--window-size=1024,768"}  # expected without debug port
