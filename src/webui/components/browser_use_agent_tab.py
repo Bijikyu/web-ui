@@ -25,6 +25,7 @@ from src.controller.custom_controller import CustomController
 from src.utils.agent_utils import initialize_llm  #(import initialize_llm utility)
 from src.utils.browser_launch import build_browser_launch_options  # // import util for browser launch options
 from src.webui.webui_manager import WebuiManager
+from src.utils.utils import ensure_dir  # // import directory util
 
 logger = logging.getLogger(__name__)
 
@@ -360,13 +361,13 @@ async def run_agent_task(
     stream_vw = 70
     stream_vh = int(70 * window_h // window_w)
 
-    os.makedirs(save_agent_history_path, exist_ok=True)
+    ensure_dir(save_agent_history_path)  # // ensure save history path
     if save_recording_path:
-        os.makedirs(save_recording_path, exist_ok=True)
+        ensure_dir(save_recording_path)  # // ensure recording path
     if save_trace_path:
-        os.makedirs(save_trace_path, exist_ok=True)
+        ensure_dir(save_trace_path)  # // ensure trace path
     if save_download_path:
-        os.makedirs(save_download_path, exist_ok=True)
+        ensure_dir(save_download_path)  # // ensure download path
 
     # --- 2. Initialize LLM ---
     main_llm = await initialize_llm(  #(use shared initialize_llm utility)
@@ -449,10 +450,9 @@ async def run_agent_task(
 
         # --- 5. Initialize or Update Agent ---
         webui_manager.bu_agent_task_id = str(uuid.uuid4())  # New ID for this task run
-        os.makedirs(
-            os.path.join(save_agent_history_path, webui_manager.bu_agent_task_id),
-            exist_ok=True,
-        )
+        ensure_dir(
+            os.path.join(save_agent_history_path, webui_manager.bu_agent_task_id)
+        )  # // ensure history task dir
         history_file = os.path.join(
             save_agent_history_path,
             webui_manager.bu_agent_task_id,
