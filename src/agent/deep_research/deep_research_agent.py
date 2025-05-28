@@ -35,6 +35,7 @@ from src.browser.custom_context import CustomBrowserContextConfig
 from src.controller.custom_controller import CustomController
 from src.utils.mcp_client import setup_mcp_client_and_tools
 from src.utils.browser_launch import build_browser_launch_options  # import util for browser launch options
+from src.utils.browser_cleanup import close_browser_resources  # reuse util for closing browser
 
 logger = logging.getLogger(__name__)
 
@@ -160,20 +161,10 @@ async def run_single_browser_task(
         )
         return {"query": task_query, "error": str(e), "status": "failed"}
     finally:
-        if bu_browser_context:
-            try:
-                await bu_browser_context.close()
-                bu_browser_context = None
-                logger.info("Closed browser context.")
-            except Exception as e:
-                logger.error(f"Error closing browser context: {e}")
-        if bu_browser:
-            try:
-                await bu_browser.close()
-                bu_browser = None
-                logger.info("Closed browser.")
-            except Exception as e:
-                logger.error(f"Error closing browser: {e}")
+        await close_browser_resources(  # close resources via util
+            bu_browser,
+            bu_browser_context,
+        )
 
         if task_key in _BROWSER_AGENT_INSTANCES:
             del _BROWSER_AGENT_INSTANCES[task_key]
