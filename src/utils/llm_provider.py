@@ -150,18 +150,62 @@ class DeepSeekR1ChatOllama(ChatOllama):
 
 def get_llm_model(provider: str, **kwargs):
     """
-    Get LLM model
-    :param provider: LLM provider
-    :param kwargs:
-    :return:
+    Factory function for creating LLM (Large Language Model) instances from various providers.
+    
+    This function abstracts the complexity of initializing different LLM providers,
+    handling authentication, configuration, and provider-specific requirements.
+    It serves as a central point for LLM instantiation throughout the application.
+    
+    Args:
+        provider (str): The LLM provider identifier (e.g., "openai", "anthropic", "google")
+        **kwargs: Provider-specific configuration parameters including:
+                 - model_name: Specific model to use (e.g., "gpt-4", "claude-3-5-sonnet")
+                 - temperature: Sampling temperature for response randomness (0.0-1.0)
+                 - api_key: Authentication key (can override environment variable)
+                 - base_url: Custom API endpoint URL (for self-hosted or proxy services)
+                 - Additional provider-specific parameters
+    
+    Returns:
+        LangChain chat model instance configured for the specified provider
+    
+    Raises:
+        ValueError: When required API key is missing or provider is unsupported
+    
+    Why this design:
+    - Centralized LLM creation ensures consistent configuration across the application
+    - Environment variable fallback provides secure credential management
+    - Provider abstraction allows easy switching between different LLM services
+    - Kwargs pattern provides flexibility for provider-specific parameters
+    - Error messages include emojis and clear instructions for better user experience
+    
+    Security considerations:
+    - API keys are sourced from environment variables first for security
+    - Explicit API key parameter allows testing but should be used carefully
+    - No API keys are logged or exposed in error messages
     """
+    
+    # Handle API key authentication for most providers
+    # Ollama and Bedrock have different authentication mechanisms, so they're excluded
     if provider not in ["ollama", "bedrock"]:
+        # Construct expected environment variable name using consistent naming convention
         env_var = f"{provider.upper()}_API_KEY"
+        
+        # Priority: explicit parameter > environment variable > empty string
+        # This allows override while defaulting to secure environment variable storage
         api_key = kwargs.get("api_key", "") or os.getenv(env_var, "")
+        
+        # Validate API key presence before attempting to create model
+        # Early validation prevents confusing provider-specific errors later
         if not api_key:
+            # Use human-friendly provider names when available for better error messages
             provider_display = config.PROVIDER_DISPLAY_NAMES.get(provider, provider.upper())
+            
+            # User-friendly error message with emojis and clear action items
+            # Includes both environment variable and UI options for flexibility
             error_msg = f"💥 {provider_display} API key not found! 🔑 Please set the `{env_var}` environment variable or provide it in the UI."
             raise ValueError(error_msg)
+        
+        # Ensure API key is available in kwargs for provider initialization
         kwargs["api_key"] = api_key
 
     if provider == "anthropic":

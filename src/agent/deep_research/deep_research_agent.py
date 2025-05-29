@@ -388,36 +388,104 @@ def _save_search_results_to_json(results: List[Dict[str, Any]], output_dir: str)
 
 
 def _save_report_to_md(report: str, output_dir: Path):
-    """Saves the final report to a markdown file."""
+    """
+    Saves the final research report to a markdown file in the specified output directory.
+    
+    This function handles the final step of the research process by persisting the
+    generated report to disk. Markdown format is chosen for its readability,
+    widespread support, and easy conversion to other formats.
+    
+    Args:
+        report (str): The complete research report content in markdown format
+        output_dir (Path): Directory where the report file should be saved
+    
+    Why this approach:
+    - Markdown format ensures human readability and easy conversion
+    - UTF-8 encoding supports international characters and symbols
+    - Exception handling prevents crashes while providing diagnostic information
+    - Separate function allows for easy testing and potential format extensions
+    
+    Error handling:
+    - Catches all exceptions to prevent research pipeline failures
+    - Logs errors with specific file paths for debugging
+    - Continues execution even if file writing fails
+    """
     report_file = os.path.join(output_dir, REPORT_FILENAME)
     try:
+        # Use UTF-8 encoding to support international characters and symbols
+        # This is crucial for research reports that may contain diverse content
         with open(report_file, "w", encoding="utf-8") as f:
             f.write(report)
         logger.info(f"Final report saved to {report_file}")
     except Exception as e:
+        # Log error but don't raise - report generation shouldn't fail due to file I/O
         logger.error(f"Failed to save final report to {report_file}: {e}")
 
 
 async def planning_node(state: DeepResearchState) -> Dict[str, Any]:
-    """Generates the initial research plan or refines it if resuming."""
+    """
+    Core planning node for the deep research agent workflow.
+    
+    This function serves as the strategic brain of the research process, either
+    generating a new research plan or resuming with an existing one. It's designed
+    to handle both fresh research starts and recovery from interrupted sessions.
+    
+    Args:
+        state (DeepResearchState): Current workflow state containing:
+                                 - llm: Language model for plan generation
+                                 - topic: Research subject
+                                 - research_plan: Existing plan (if resuming)
+                                 - search_results: Previous results (if any)
+                                 - output_dir: Directory for saving files
+                                 - stop_requested: Emergency stop flag
+    
+    Returns:
+        Dict[str, Any]: Updated state with research plan and any status changes
+    
+    Why this design:
+    - Async function supports long-running LLM operations without blocking
+    - State-based architecture allows for workflow resumption and error recovery
+    - Early exit on stop_requested prevents resource waste during cancellation
+    - Separate handling for new vs. existing plans provides flexibility
+    - File persistence ensures plans survive process restarts
+    
+    Plan generation vs. resumption logic:
+    - New plans: Generated from scratch using LLM with topic context
+    - Existing plans: Reused for consistency, with potential for future LLM review
+    - This approach balances efficiency (reuse) with adaptability (potential updates)
+    """
     logger.info("--- Entering Planning Node ---")
+    
+    # Check for cancellation request early to avoid unnecessary work
+    # This is essential for responsive user experience during long research sessions
     if state.get("stop_requested"):
         logger.info("Stop requested, skipping planning.")
         return {"stop_requested": True}
 
+    # Extract required state components
+    # These assignments make the code more readable and catch missing state early
     llm = state["llm"]
     topic = state["topic"]
     existing_plan = state.get("research_plan")
     existing_results = state.get("search_results")
     output_dir = state["output_dir"]
 
+    # Handle resumption scenario: existing plan with progress made
+    # This branch handles recovery from interrupted research sessions
     if existing_plan and state.get("current_step_index", 0) > 0:
         logger.info("Resuming with existing plan.")
-        # Maybe add logic here to let LLM review and potentially adjust the plan
-        # based on existing_results, but for now, we just use the loaded plan.
-        _save_plan_to_md(existing_plan, output_dir)  # Ensure it's saved initially
-        return {"research_plan": existing_plan}  # Return the loaded plan
+        
+        # TODO: Future enhancement - LLM could review and adapt existing plan
+        # based on existing_results to optimize remaining research steps
+        # For now, we maintain consistency by reusing the original plan
+        
+        # Ensure plan is persisted to disk for reference and debugging
+        _save_plan_to_md(existing_plan, output_dir)
+        
+        # Return existing plan to continue workflow from where it left off
+        return {"research_plan": existing_plan}
 
+    # Generate new research plan for fresh research topics
     logger.info(f"Generating new research plan for topic: {topic}")
 
     prompt = ChatPromptTemplate.from_messages(

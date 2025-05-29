@@ -149,44 +149,61 @@ def create_agent_settings_tab(webui_manager: WebuiManager):
                 interactive=True
             )
 
-            planner_ollama_num_ctx = gr.Slider(
-                minimum=2 ** 8,
-                maximum=2 ** 16,
-                value=16000,
+            # Ollama-specific context length configuration
+    # Context length directly impacts memory usage and processing speed
+    # Powers of 2 are used because they align with model architecture and tokenization
+    planner_ollama_num_ctx = gr.Slider(
+                minimum=2 ** 8,    # 256 tokens - minimal context for simple tasks
+                maximum=2 ** 16,   # 65536 tokens - very large context for complex reasoning
+                value=16000,       # Balanced default - good for most research tasks
                 step=1,
                 label="Ollama Context Length",
                 info="Controls max context length model needs to handle (less = faster)",
-                visible=False,
+                visible=False,     # Hidden by default, shown when Ollama is selected
                 interactive=True
             )
 
+        # API configuration section for custom endpoints and authentication
+        # Row layout places related fields side by side for efficient form filling
         with gr.Row():
+            # Base URL field for custom API endpoints
+            # Essential for self-hosted models, proxy services, or alternative API providers
             planner_llm_base_url = gr.Textbox(
                 label="Base URL",
-                value="",
+                value="",          # Empty default - uses provider's standard endpoint
                 info="API endpoint URL (if required)"
             )
+            
+            # API key field with password type for security
+            # Allows override of environment variables for testing or multi-key scenarios
             planner_llm_api_key = gr.Textbox(
                 label="API Key",
-                type="password",
-                value="",
+                type="password",   # Masks input for security
+                value="",          # Empty default - falls back to environment variables
                 info="Your API key (leave blank to use .env)"
             )
 
+    # Agent execution limits section
+    # These controls prevent runaway processes and manage resource consumption
     with gr.Row():
+        # Maximum workflow steps - prevents infinite loops and runaway costs
+        # Range: 1-1000 provides flexibility while preventing excessive resource use
         max_steps = gr.Slider(
-            minimum=1,
-            maximum=1000,
-            value=100,
+            minimum=1,         # At least one step required for any meaningful work
+            maximum=1000,      # Upper limit prevents runaway processes
+            value=100,         # Default suitable for most complex research tasks
             step=1,
             label="Max Run Steps",
             info="Maximum number of steps the agent will take",
             interactive=True
         )
+        
+        # Actions per step limit - controls granularity and prevents blocking
+        # Smaller values = more frequent checkpoints, larger values = fewer interruptions
         max_actions = gr.Slider(
-            minimum=1,
-            maximum=100,
-            value=10,
+            minimum=1,         # Minimum one action per step for progress
+            maximum=100,       # Upper bound prevents excessively long steps
+            value=10,          # Balanced default - allows meaningful progress per step
             step=1,
             label="Max Number of Actions",
             info="Maximum number of actions the agent will take per step",
