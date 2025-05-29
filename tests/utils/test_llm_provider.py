@@ -95,3 +95,25 @@ def test_ollama_custom_params(monkeypatch):
     assert isinstance(model, llm_provider.ChatOllama)  # (instance check)
     assert model.kwargs['base_url'] == 'http://ollama'  # (verify base_url)
     assert model.kwargs['temperature'] == 0.1  # (verify temperature)
+
+
+def test_anthropic_requires_key(monkeypatch):  #(description of change & current functionality)
+    monkeypatch.delenv('ANTHROPIC_API_KEY', raising=False)  #(description of change & current functionality)
+    with pytest.raises(ValueError):  #(description of change & current functionality)
+        llm_provider.get_llm_model('anthropic')  #(description of change & current functionality)
+
+
+def test_anthropic_custom_params(monkeypatch):  #(description of change & current functionality)
+    monkeypatch.setenv('ANTHROPIC_API_KEY', 'ant-test')  #(description of change & current functionality)
+    model = llm_provider.get_llm_model(  #(description of change & current functionality)
+        'anthropic', base_url='https://anthropic', temperature=0.2  #(description of change & current functionality)
+    )  #(description of change & current functionality)
+    assert isinstance(model, llm_provider.ChatAnthropic)  #(description of change & current functionality)
+    assert model.kwargs['base_url'] == 'https://anthropic'  #(description of change & current functionality)
+    assert model.kwargs['temperature'] == 0.2  #(description of change & current functionality)
+
+
+def test_ollama_no_key(monkeypatch):  #(description of change & current functionality)
+    monkeypatch.delenv('OLLAMA_ENDPOINT', raising=False)  #(description of change & current functionality)
+    model = llm_provider.get_llm_model('ollama')  #(description of change & current functionality)
+    assert isinstance(model, llm_provider.ChatOllama)  #(description of change & current functionality)
