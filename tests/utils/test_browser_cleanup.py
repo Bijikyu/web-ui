@@ -36,3 +36,10 @@ def test_close_browser_resources_none():  # call with no browser or context
         asyncio.run(close_browser_resources(None, None))  # invoke util with none
         log.info.assert_not_called()  # no info logs expected
         log.error.assert_not_called()  # no error logs expected
+
+
+def test_close_browser_resources_none_logs():  # verify logging
+    with patch('src.utils.browser_cleanup.logger') as log:  # patch logger
+        asyncio.run(close_browser_resources(None, None))  # call util again
+        log.info.assert_not_called()  # nothing logged as info
+        log.error.assert_not_called()  # nothing logged as error
