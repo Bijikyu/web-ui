@@ -29,3 +29,10 @@ def test_close_browser_resources_errors():  # handle closing errors
         asyncio.run(close_browser_resources(browser, context))  # call util
         log.error.assert_any_call('Error closing context: c')  # context error log
         log.error.assert_any_call('Error closing browser: b')  # browser error log
+
+
+def test_close_browser_resources_none():  # call with no browser or context
+    with patch('src.utils.browser_cleanup.logger') as log:  # patch logger
+        asyncio.run(close_browser_resources(None, None))  # invoke util with none
+        log.info.assert_not_called()  # no info logs expected
+        log.error.assert_not_called()  # no error logs expected
