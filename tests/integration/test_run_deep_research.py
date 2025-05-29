@@ -59,15 +59,18 @@ def preload_stubs():
     sys.modules.setdefault("gradio", gradio)
     sys.modules.setdefault("gradio.components", comps)
 
-    browser_use = types.ModuleType("browser_use")
-    browser_use.browser = types.ModuleType("browser_use.browser")
-    browser_use.browser.browser = types.ModuleType("browser_use.browser.browser")
-    browser_use.browser.context = types.ModuleType("browser_use.browser.context")
-    browser_use.browser.views = types.ModuleType("browser_use.browser.views")
-    browser_use.agent = types.ModuleType("browser_use.agent")
-    browser_use.agent.views = types.ModuleType("browser_use.agent.views")
-    browser_use.agent.service = types.ModuleType("browser_use.agent.service")
+    browser_use = sys.modules.setdefault("browser_use", types.ModuleType("browser_use"))  #(description of change & current functionality)
+    browser_use.browser = types.ModuleType("browser_use.browser")  #(description of change & current functionality)
+    browser_use.browser.browser = types.ModuleType("browser_use.browser.browser")  #(description of change & current functionality)
+    browser_use.browser.context = types.ModuleType("browser_use.browser.context")  #(description of change & current functionality)
+    browser_use.browser.views = types.ModuleType("browser_use.browser.views")  #(description of change & current functionality)
+    browser_use.agent = types.ModuleType("browser_use.agent")  #(description of change & current functionality)
+    browser_use.agent.views = types.ModuleType("browser_use.agent.views")  #(description of change & current functionality)
+    browser_use.agent.service = types.ModuleType("browser_use.agent.service")  #(description of change & current functionality)
     browser_use.agent.service.Agent = object
+    browser_use.browser.browser.Browser = object  #(description of change & current functionality)
+    browser_use.browser.context.BrowserContext = object  #(description of change & current functionality)
+    browser_use.browser.views.BrowserState = object  #(description of change & current functionality)
     sys.modules.setdefault("browser_use", browser_use)
     sys.modules.setdefault("browser_use.browser", browser_use.browser)
     sys.modules.setdefault("browser_use.browser.browser", browser_use.browser.browser)
@@ -99,6 +102,7 @@ preload_stubs()
 
 
 def setup_stubs():
+    preload_stubs()  #(description of change & current functionality)
     modules = {}
     sys.modules.setdefault("requests", types.ModuleType("requests"))
 

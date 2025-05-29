@@ -39,6 +39,7 @@ browser_use.browser.context = types.ModuleType("browser_use.browser.context")
 browser_use.agent = types.ModuleType("browser_use.agent")
 browser_use.agent.service = types.ModuleType("browser_use.agent.service")
 setattr(browser_use.browser.browser, "Browser", object)
+setattr(browser_use.browser.browser, "BrowserConfig", object)  #(description of change & current functionality)
 setattr(browser_use.browser.context, "BrowserContext", object)
 setattr(browser_use.agent.service, "Agent", object)
 sys.modules["browser_use"] = browser_use
