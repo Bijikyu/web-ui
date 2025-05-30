@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 class CustomBrowser(Browser):
+    """Browser wrapper returning CustomBrowserContext with merged settings."""  #// explains reason for subclass
 
     async def new_context(self, config: CustomBrowserContextConfig | None = None) -> CustomBrowserContext:
         """Create a browser context""" # (added docstring reminder)

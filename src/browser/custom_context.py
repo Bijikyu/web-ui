@@ -14,10 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 class CustomBrowserContextConfig(BrowserContextConfig):
+    """Configuration that allows forcing a new Playwright context."""  #// clarify extension
     force_new_context: bool = False  # force to create new context
 
 
 class CustomBrowserContext(BrowserContext):
+    """BrowserContext subclass injecting anti-detection scripts by default."""  #// explains customization
     def __init__(
             self,
             browser: 'Browser',
