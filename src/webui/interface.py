@@ -1,5 +1,4 @@
 
-```python
 """
 Browser Agent WebUI Interface Creation and Theme Management
 
@@ -359,4 +358,3 @@ def create_ui(theme_name="Ocean"):  # theme_name selects a validated theme from 
     # - Provides flexibility for different deployment scenarios
     # - Allows queue().launch() to be called with deployment-specific options later # (clarify separation for queue/launch behavior)
     return demo
-```
