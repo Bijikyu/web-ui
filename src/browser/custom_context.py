@@ -28,13 +28,11 @@ class CustomBrowserContext(BrowserContext):
     async def _create_context(self, browser: PlaywrightBrowser):
         """Creates a new browser context with anti-detection measures and loads cookies if available."""
         if not self.config.force_new_context and self.browser.config.cdp_url and len(browser.contexts) > 0:
-            context = browser.contexts[0]
+            context = browser.contexts[0]  # reuse existing CDP connected context when possible
         elif not self.config.force_new_context and self.browser.config.browser_binary_path and len(
                 browser.contexts) > 0:
-            # Connect to existing Chrome instance instead of creating new one
-            context = browser.contexts[0]
+            context = browser.contexts[0]  # reuse launched browser context instead of new one
         else:
-            # Original code for creating new context
             context = await browser.new_context(
                 no_viewport=True,
                 user_agent=self.config.user_agent,
@@ -54,16 +52,16 @@ class CustomBrowserContext(BrowserContext):
                 geolocation=self.config.geolocation,
                 permissions=self.config.permissions,
                 timezone_id=self.config.timezone_id,
-            )
+            )  # create a fresh context when reuse is not possible
 
         if self.config.trace_path:
-            await context.tracing.start(screenshots=True, snapshots=True, sources=True)
+            await context.tracing.start(screenshots=True, snapshots=True, sources=True)  # begin tracing when requested
 
         # Load cookies if they exist
         if self.config.cookies_file and os.path.exists(self.config.cookies_file):
             with open(self.config.cookies_file, 'r') as f:
                 try:
-                    cookies = json.load(f)
+                    cookies = json.load(f)  # read persisted cookies
 
                     valid_same_site_values = ['Strict', 'Lax', 'None']
                     for cookie in cookies:
@@ -74,13 +72,13 @@ class CustomBrowserContext(BrowserContext):
                                 )
                                 cookie['sameSite'] = 'None'
                     logger.info(f'🍪  Loaded {len(cookies)} cookies from {self.config.cookies_file}')
-                    await context.add_cookies(cookies)
+                    await context.add_cookies(cookies)  # restore browsing session
 
                 except json.JSONDecodeError as e:
                     logger.error(f'Failed to parse cookies file: {str(e)}')
 
         # Expose anti-detection scripts
-        await context.add_init_script(
+        await context.add_init_script(  # inject JS to mask automation footprint
             """
             // Webdriver property
             Object.defineProperty(navigator, 'webdriver', {
@@ -114,6 +112,6 @@ class CustomBrowserContext(BrowserContext):
                 };
             })();
             """
-        )
+        )  # ensure context behaves more like a real user
 
         return context
