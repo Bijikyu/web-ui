@@ -28,6 +28,7 @@ def test_encode_image_none():
 
 
 def fake_path(path, mtime):  # helper to build fake Path
+    """Return a mock Path object with predetermined modification time."""  #(added docstring describing helper purpose)
     stat = SimpleNamespace(st_mtime=mtime)  # fake stat object
     p = MagicMock()  # create mock path
     p.stat.return_value = stat  # stub stat

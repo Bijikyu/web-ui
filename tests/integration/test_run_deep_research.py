@@ -36,6 +36,7 @@ class DummyNumber(DummyComponent):
 
 
 def preload_stubs():
+    """Create base gradio and browser_use stubs used across tests."""  #(added docstring describing helper purpose)
     gradio = types.ModuleType("gradio")
     comps = types.ModuleType("gradio.components")
     setattr(comps, "Component", DummyComponent)
@@ -102,6 +103,7 @@ preload_stubs()
 
 
 def setup_stubs():
+    """Install per-test stubs and return their module names for cleanup."""  #(added docstring describing helper purpose)
     preload_stubs()  #(description of change & current functionality)
     modules = {}
     sys.modules.setdefault("requests", types.ModuleType("requests"))
@@ -202,6 +204,7 @@ def setup_stubs():
 
 
 def teardown_stubs(modules):
+    """Remove previously added stub modules from sys.modules."""  #(added docstring describing cleanup)
     for name in modules:
         sys.modules.pop(name, None)
 

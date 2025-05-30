@@ -13,6 +13,7 @@ class Dummy:
 
 
 def stub_module(name, attrs=None):
+    """Insert a simple module with optional attributes for import mocking."""  #(added docstring describing helper purpose)
     mod = types.ModuleType(name)
     if attrs:
         for k, v in attrs.items():

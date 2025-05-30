@@ -4,6 +4,7 @@ import asyncio
 
 sys.path.append(".")
 def setup_stubs():
+    """Stub external modules so BrowserUseAgent imports without dependencies."""  #(added docstring explaining helper role)
     modules = {
         'browser_use': types.ModuleType('browser_use'),
         'browser_use.agent': types.ModuleType('browser_use.agent'),

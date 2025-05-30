@@ -7,6 +7,7 @@ import pytest
 sys.path.append(".")
 
 def setup_stubs():
+    """Register stub modules needed to import deep research agent code."""  #(added docstring describing stubs purpose)
     modules = {
         'browser_use.browser.browser': types.ModuleType('browser_use.browser.browser'),
         'langchain_community.tools.file_management': types.ModuleType('langchain_community.tools.file_management'),
