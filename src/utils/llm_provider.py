@@ -138,13 +138,16 @@ class DeepSeekR1ChatOpenAI(ChatOpenAI):
             else:
                 message_history.append({"role": "user", "content": input_.content})
 
-        response = self.client.chat.completions.create(
-            model=self.model_name,
-            messages=message_history
-        )
-
-        reasoning_content = response.choices[0].message.reasoning_content
-        content = response.choices[0].message.content
+        if os.getenv('CODEX') != 'True':  # use real API when CODEX is not True
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=message_history
+            )
+            reasoning_content = response.choices[0].message.reasoning_content
+            content = response.choices[0].message.content
+        else:  # provide mock values when running on Codex
+            reasoning_content = 'mock reasoning'  # mocked reasoning content
+            content = 'mock response'  # mocked message content
         return AIMessage(content=content, reasoning_content=reasoning_content)
 
     def invoke(
@@ -164,13 +167,16 @@ class DeepSeekR1ChatOpenAI(ChatOpenAI):
             else:
                 message_history.append({"role": "user", "content": input_.content})
 
-        response = self.client.chat.completions.create(
-            model=self.model_name,
-            messages=message_history
-        )
-
-        reasoning_content = response.choices[0].message.reasoning_content
-        content = response.choices[0].message.content
+        if os.getenv('CODEX') != 'True':  # real API call when not on Codex
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=message_history
+            )
+            reasoning_content = response.choices[0].message.reasoning_content
+            content = response.choices[0].message.content
+        else:  # mocked values for Codex
+            reasoning_content = 'mock reasoning'  # mocked reasoning content
+            content = 'mock response'  # mocked message content
         return AIMessage(content=content, reasoning_content=reasoning_content)
 
 
@@ -185,7 +191,10 @@ class DeepSeekR1ChatOllama(ChatOllama):
             stop: Optional[list[str]] = None,
             **kwargs: Any,
     ) -> AIMessage:
-        org_ai_message = await super().ainvoke(input=input)
+        if os.getenv('CODEX') != 'True':  # run real call when CODEX unset
+            org_ai_message = await super().ainvoke(input=input)
+        else:  # mock the ai message when running on Codex
+            org_ai_message = AIMessage(content='<think>mock reason</think>mock')
         org_content = org_ai_message.content
         reasoning_content = org_content.split("</think>")[0].replace("<think>", "")
         content = org_content.split("</think>")[1]
@@ -201,7 +210,10 @@ class DeepSeekR1ChatOllama(ChatOllama):
             stop: Optional[list[str]] = None,
             **kwargs: Any,
     ) -> AIMessage:
-        org_ai_message = super().invoke(input=input)
+        if os.getenv('CODEX') != 'True':  # run real call when CODEX unset
+            org_ai_message = super().invoke(input=input)
+        else:  # mock the ai message when running on Codex
+            org_ai_message = AIMessage(content='<think>mock reason</think>mock')
         org_content = org_ai_message.content
         reasoning_content = org_content.split("</think>")[0].replace("<think>", "")
         content = org_content.split("</think>")[1]
