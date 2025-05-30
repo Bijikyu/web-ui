@@ -1,3 +1,4 @@
+"""Custom browser context providing anti-detection features."""  # module docstring summarizing purpose
 import json
 import logging
 import os
