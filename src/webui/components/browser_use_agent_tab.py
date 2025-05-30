@@ -645,3 +645,43 @@ async def run_agent_task(
     except Exception as e:  # // capture any setup errors
         logger.error(f"run_agent_task encountered error: {e}", exc_info=True)
         return
+
+    # --- 6. Construct and run the agent ---  #(create agent and set callbacks)
+    step_cb = lambda s, o, n: asyncio.create_task(  #(async step handling)
+        _handle_new_step(webui_manager, s, o, n)
+    )
+    done_cb = lambda h: _handle_done(webui_manager, h)  #(final history summary)
+
+    webui_manager.bu_agent = BrowserUseAgent(  #(store agent instance for control)
+        task=task,
+        llm=main_llm,
+        browser=webui_manager.bu_browser,
+        browser_context=webui_manager.bu_browser_context,
+        controller=webui_manager.bu_controller,
+        use_vision=use_vision,
+        register_new_step_callback=step_cb,
+        register_done_callback=done_cb,
+    )
+
+    history = await webui_manager.bu_agent.run(max_steps=max_steps)  #(run agent)
+    webui_manager.bu_agent.save_history(history_file)  #(save history file)
+
+    if should_close_browser_on_finish:  #(close browser if not keeping open)
+        if webui_manager.bu_browser_context:
+            await webui_manager.bu_browser_context.close()
+            webui_manager.bu_browser_context = None
+        if webui_manager.bu_browser:
+            await webui_manager.bu_browser.close()
+            webui_manager.bu_browser = None
+
+    yield {  #(final UI state after run completes)
+        run_button_comp: gr.Button(value="▶️ Submit Task", interactive=True),
+        stop_button_comp: gr.Button(interactive=False),
+        pause_resume_button_comp: gr.Button(interactive=False),
+        clear_button_comp: gr.Button(interactive=True),
+        chatbot_comp: gr.update(value=webui_manager.bu_chat_history),
+        history_file_comp: gr.update(value=history_file),
+        gif_comp: gr.update(value=gif_path if os.path.exists(gif_path) else None),
+    }
+
+    return
