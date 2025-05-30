@@ -1,5 +1,6 @@
+"""CustomController extends the generic browser Controller with extra actions."""  # module purpose
 
-from typing import Optional, Type, Callable, Dict, Any, Union, Awaitable, TypeVar
+from typing import Optional, Type, Callable, Dict, Any, Union, Awaitable, TypeVar  # type hints for controller
 from pydantic import BaseModel
 from browser_use.agent.views import ActionResult
 from browser_use.browser.context import BrowserContext
@@ -40,14 +41,14 @@ class CustomController(Controller):
                  ask_assistant_callback: Optional[Union[Callable[[str, BrowserContext], Dict[str, Any]], Callable[
                      [str, BrowserContext], Awaitable[Dict[str, Any]]]]] = None,
                  ):
-        super().__init__(exclude_actions=exclude_actions, output_model=output_model)
-        self._register_custom_actions()
-        self.ask_assistant_callback = ask_assistant_callback
-        self.mcp_client = None
-        self.mcp_server_config = None
+        super().__init__(exclude_actions=exclude_actions, output_model=output_model)  # setup base controller
+        self._register_custom_actions()  # install built-in and custom actions
+        self.ask_assistant_callback = ask_assistant_callback  # callback to query a human
+        self.mcp_client = None  # will hold MCP client when configured
+        self.mcp_server_config = None  # holds config for connecting MCP
 
     def _register_custom_actions(self):
-        """Register all custom browser actions"""
+        """Register all custom browser actions"""  # actions become part of the registry
 
         @self.registry.action(
             "When executing tasks, prioritize autonomous completion. However, if you encounter a definitive blocker "
@@ -55,7 +56,7 @@ class CustomController(Controller):
             "requiring subjective human judgment, needing a physical action performed, encountering complex CAPTCHAs, "
             "or facing limitations in your capabilities – you must request human assistance."
         )
-        async def ask_for_assistant(query: str, browser: BrowserContext):
+        async def ask_for_assistant(query: str, browser: BrowserContext):  # custom action to request human help
             if self.ask_assistant_callback:
                 if inspect.iscoroutinefunction(self.ask_assistant_callback):
                     user_response = await self.ask_assistant_callback(query, browser)
@@ -66,12 +67,12 @@ class CustomController(Controller):
                 return ActionResult(extracted_content=msg, include_in_memory=True)
             else:
                 return ActionResult(extracted_content="Human cannot help you. Please try another way.",
-                                    include_in_memory=True)
+                                    include_in_memory=True)  # fallback keeps agent autonomous when no callback
 
         @self.registry.action(
             'Upload file to interactive element with file path ',
         )
-        async def upload_file(index: int, path: str, browser: BrowserContext, available_file_paths: list[str]):
+        async def upload_file(index: int, path: str, browser: BrowserContext, available_file_paths: list[str]):  # send file to element
             if path not in available_file_paths:
                 return ActionResult(error=f'File path {path} is not available')
 
@@ -135,7 +136,7 @@ class CustomController(Controller):
                             sensitive_data=sensitive_data,
                             available_file_paths=available_file_paths,
                             context=context,
-                        )
+                        )  # route non-MCP actions to browser
 
                     if isinstance(result, str):
                         return ActionResult(extracted_content=result)
@@ -144,16 +145,16 @@ class CustomController(Controller):
                     elif result is None:
                         return ActionResult()
                     else:
-                        raise ValueError(f'Invalid action result type: {type(result)} of {result}')
+                        raise ValueError(f'Invalid action result type: {type(result)} of {result}')  # consistent error when tool misbehaves
             return ActionResult()
         except Exception as e:
-            raise e
+            raise e  # let caller handle any action failure
 
     async def setup_mcp_client(self, mcp_server_config: Optional[Dict[str, Any]] = None):
-        self.mcp_server_config = mcp_server_config
+        self.mcp_server_config = mcp_server_config  # store configuration for later
         if self.mcp_server_config:
             self.mcp_client = await setup_mcp_client_and_tools(self.mcp_server_config)
-            self.register_mcp_tools()
+            self.register_mcp_tools()  # once connected load all remote tools
 
     def register_mcp_tools(self):
         """
@@ -168,9 +169,9 @@ class CustomController(Controller):
                         description=tool.description,
                         function=tool,
                         param_model=create_tool_param_model(tool),
-                    )
+                    )  # expose remote tool via registry for act()
                     logger.info(f"Add mcp tool: {tool_name}")
 
     async def close_mcp_client(self):
         if self.mcp_client:
-            await self.mcp_client.__aexit__(None, None, None)
+            await self.mcp_client.__aexit__(None, None, None)  # graceful shutdown of MCP session
