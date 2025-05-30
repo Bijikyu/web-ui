@@ -115,10 +115,18 @@ class DeepSeekR1ChatOpenAI(ChatOpenAI):
     """OpenAI client wrapper returning reasoning content alongside text."""  # class docstring
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.client = OpenAI(
-            base_url=kwargs.get("base_url"),
-            api_key=kwargs.get("api_key")
+        """Keep a direct OpenAI client using kwargs for flexible config.
+
+        The ``base_url`` and ``api_key`` values are read from ``kwargs`` so
+        callers can override the endpoint or credentials without changing
+        the method signature. A dedicated client is stored for performing
+        low-level API calls where ``ChatOpenAI`` may not expose every
+        option.
+        """  # explained kwargs usage and client storage purpose
+        super().__init__(*args, **kwargs)  # init base ChatOpenAI
+        self.client = OpenAI(  # create separate OpenAI client
+            base_url=kwargs.get("base_url"),  # allow overriding endpoint
+            api_key=kwargs.get("api_key")  # api key may differ from global
         )
 
     async def ainvoke(
