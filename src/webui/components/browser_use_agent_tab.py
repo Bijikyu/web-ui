@@ -95,6 +95,7 @@ from src.utils.agent_utils import initialize_llm  #(import initialize_llm utilit
 from src.utils.browser_launch import build_browser_launch_options  # // import util for browser launch options
 from src.webui.webui_manager import WebuiManager
 from src.utils.utils import ensure_dir  # // import directory util
+from src.webui.components.browser_settings_tab import close_browser  # // reuse browser closing helper
 
 # Module-level logger for automation task execution and user interaction tracking
 # This logging is essential for debugging automation failures and understanding user behavior
@@ -652,7 +653,7 @@ async def run_agent_task(
     )
     done_cb = lambda h: _handle_done(webui_manager, h)  #(final history summary)
 
-    webui_manager.bu_agent = BrowserUseAgent(  #(store agent instance for control)
+    webui_manager.bu_agent = BrowserUseAgent(  # store agent instance for control
         task=task,
         llm=main_llm,
         browser=webui_manager.bu_browser,
@@ -663,18 +664,24 @@ async def run_agent_task(
         register_done_callback=done_cb,
     )
 
-    history = await webui_manager.bu_agent.run(max_steps=max_steps)  #(run agent)
-    webui_manager.bu_agent.save_history(history_file)  #(save history file)
+    agent_coro = webui_manager.bu_agent.run(max_steps=max_steps)  # create run coroutine
+    task_handle = asyncio.create_task(agent_coro)  # schedule agent execution
+    webui_manager.bu_current_task = task_handle  # track running task
 
-    if should_close_browser_on_finish:  #(close browser if not keeping open)
-        if webui_manager.bu_browser_context:
-            await webui_manager.bu_browser_context.close()
-            webui_manager.bu_browser_context = None
-        if webui_manager.bu_browser:
-            await webui_manager.bu_browser.close()
-            webui_manager.bu_browser = None
+    try:
+        while not task_handle.done():
+            await asyncio.sleep(0.1)
+            yield {chatbot_comp: gr.update(value=webui_manager.bu_chat_history)}
+        history = await task_handle
+    finally:
+        webui_manager.bu_current_task = None
 
-    yield {  #(final UI state after run completes)
+    webui_manager.bu_agent.save_history(history_file)  # save history file
+
+    if should_close_browser_on_finish:  # close browser if not keeping open
+        await close_browser(webui_manager)
+
+    yield {  # final UI state after run completes
         run_button_comp: gr.Button(value="▶️ Submit Task", interactive=True),
         stop_button_comp: gr.Button(interactive=False),
         pause_resume_button_comp: gr.Button(interactive=False),
@@ -685,3 +692,138 @@ async def run_agent_task(
     }
 
     return
+
+
+async def handle_submit(webui_manager: WebuiManager, components: Dict[Component, Any]) -> AsyncGenerator[Dict[Component, Any], None]:
+    """Launch the agent when not already running."""  # ensures only one task at a time
+    if webui_manager.bu_current_task and not webui_manager.bu_current_task.done():
+        yield {}
+        return
+    async for update in run_agent_task(webui_manager, components):
+        yield update
+
+
+async def handle_pause_resume(webui_manager: WebuiManager) -> Dict[Component, Any]:
+    """Toggle the pause state of the running agent."""  # modifies pause button label
+    pause_button = webui_manager.get_component_by_id("browser_use_agent.pause_resume_button")
+    agent = webui_manager.bu_agent
+    task = webui_manager.bu_current_task
+    if not agent or not task or task.done():
+        return {}
+    if getattr(agent.state, "paused", False):
+        agent.resume()
+        return {pause_button: gr.update(value="⏸️ Pause", interactive=True)}
+    agent.pause()
+    return {pause_button: gr.update(value="▶️ Resume", interactive=True)}
+
+
+async def handle_stop(webui_manager: WebuiManager) -> Dict[Component, Any]:
+    """Stop the running agent and disable controls."""  # updates buttons when stopping
+    run_button = webui_manager.get_component_by_id("browser_use_agent.run_button")
+    stop_button = webui_manager.get_component_by_id("browser_use_agent.stop_button")
+    pause_button = webui_manager.get_component_by_id("browser_use_agent.pause_resume_button")
+    clear_button = webui_manager.get_component_by_id("browser_use_agent.clear_button")
+    agent = webui_manager.bu_agent
+    task = webui_manager.bu_current_task
+    if agent and task and not task.done():
+        agent.stop()
+        return {
+            stop_button: gr.update(interactive=False, value="⏹️ Stopping..."),
+            pause_button: gr.update(interactive=False),
+            run_button: gr.update(interactive=False),
+        }
+    return {
+        run_button: gr.update(interactive=True),
+        stop_button: gr.update(interactive=False),
+        pause_button: gr.update(interactive=False),
+        clear_button: gr.update(interactive=True),
+    }
+
+
+async def handle_clear(webui_manager: WebuiManager) -> Dict[Component, Any]:
+    """Clear chat, cancel tasks and reset browser state."""  # resets all runtime info
+    if webui_manager.bu_current_task and not webui_manager.bu_current_task.done():
+        webui_manager.bu_current_task.cancel()
+    await close_browser(webui_manager)
+    webui_manager.bu_agent = None
+    webui_manager.bu_controller = None
+    webui_manager.bu_current_task = None
+    webui_manager.bu_chat_history = []
+    webui_manager.bu_response_event = None
+    webui_manager.bu_user_help_response = None
+    webui_manager.bu_agent_task_id = None
+    run_button = webui_manager.get_component_by_id("browser_use_agent.run_button")
+    stop_button = webui_manager.get_component_by_id("browser_use_agent.stop_button")
+    pause_button = webui_manager.get_component_by_id("browser_use_agent.pause_resume_button")
+    clear_button = webui_manager.get_component_by_id("browser_use_agent.clear_button")
+    chatbot = webui_manager.get_component_by_id("browser_use_agent.chatbot")
+    history_file = webui_manager.get_component_by_id("browser_use_agent.agent_history_file")
+    gif = webui_manager.get_component_by_id("browser_use_agent.recording_gif")
+    browser_view = webui_manager.get_component_by_id("browser_use_agent.browser_view")
+    return {
+        run_button: gr.update(value="▶️ Submit Task", interactive=True),
+        stop_button: gr.update(interactive=False),
+        pause_button: gr.update(interactive=False),
+        clear_button: gr.update(interactive=True),
+        chatbot: gr.update(value=[]),
+        history_file: gr.update(value=None),
+        gif: gr.update(value=None),
+        browser_view: gr.update(value=None),
+    }
+
+
+def create_browser_use_agent_tab(webui_manager: WebuiManager):
+    """Create the main browser use agent tab UI."""  # builds and wires components
+    tab_components = {}
+    with gr.Row():
+        user_input = gr.Textbox(label="Task", lines=2, interactive=True)
+        with gr.Column(scale=1):
+            run_button = gr.Button("▶️ Submit Task", variant="primary")
+            stop_button = gr.Button("⏹️ Stop", variant="stop", interactive=False)
+            pause_button = gr.Button("⏸️ Pause", interactive=False)
+            clear_button = gr.Button("Clear")
+    chatbot = gr.Chatbot()
+    browser_view = gr.HTML()
+    history_file = gr.File(interactive=False)
+    gif = gr.Image(interactive=False)
+    tab_components.update(
+        dict(
+            user_input=user_input,
+            run_button=run_button,
+            stop_button=stop_button,
+            pause_resume_button=pause_button,
+            clear_button=clear_button,
+            chatbot=chatbot,
+            browser_view=browser_view,
+            agent_history_file=history_file,
+            recording_gif=gif,
+        )
+    )
+    webui_manager.add_components("browser_use_agent", tab_components)
+    webui_manager.init_browser_use_agent()
+
+    tab_outputs = list(tab_components.values())
+    all_inputs = set(webui_manager.get_components())
+
+    async def submit_wrapper(comps: Dict[Component, Any]) -> AsyncGenerator[Dict[Component, Any], None]:
+        async for upd in handle_submit(webui_manager, comps):
+            yield upd
+
+    run_button.click(submit_wrapper, inputs=all_inputs, outputs=tab_outputs)
+    user_input.submit(submit_wrapper, inputs=all_inputs, outputs=tab_outputs)
+
+    async def pause_wrapper() -> Dict[Component, Any]:
+        return await handle_pause_resume(webui_manager)
+
+    pause_button.click(pause_wrapper, outputs=[pause_button])
+
+    async def stop_wrapper() -> Dict[Component, Any]:
+        return await handle_stop(webui_manager)
+
+    stop_button.click(stop_wrapper, outputs=tab_outputs)
+
+    async def clear_wrapper() -> Dict[Component, Any]:
+        return await handle_clear(webui_manager)
+
+    clear_button.click(clear_wrapper, outputs=tab_outputs)
+
