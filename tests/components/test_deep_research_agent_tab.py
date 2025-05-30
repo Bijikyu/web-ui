@@ -98,14 +98,14 @@ class DummyAgent:
 
 
 
-def test_read_file_safe_valid(monkeypatch, tmp_path):
+def test_read_file_safe_valid(monkeypatch, tmp_path):  # return file contents when readable
     mod = load_deep_tab(monkeypatch)
     file_path = tmp_path / "f.txt"
     file_path.write_text("hello")
     assert mod._read_file_safe(str(file_path)) == "hello"
 
 
-def test_read_file_safe_error(monkeypatch, caplog):
+def test_read_file_safe_error(monkeypatch, caplog):  # log and return None on error
     mod = load_deep_tab(monkeypatch)
     monkeypatch.setattr(mod.os.path, "exists", lambda p: True)
     monkeypatch.setattr("builtins.open", lambda *a, **k: (_ for _ in ()).throw(OSError("bad")))
@@ -115,7 +115,7 @@ def test_read_file_safe_error(monkeypatch, caplog):
     assert "Error reading file missing.txt" in caplog.text
 
 
-def test_update_mcp_server_invalid(monkeypatch):
+def test_update_mcp_server_invalid(monkeypatch):  # invalid config path hides config
     mod = load_deep_tab(monkeypatch)
     mgr = DummyManager()
     mgr.dr_agent = DummyAgent()
@@ -126,7 +126,7 @@ def test_update_mcp_server_invalid(monkeypatch):
     assert mgr.dr_agent.closed
 
 
-def test_update_mcp_server_valid(monkeypatch):
+def test_update_mcp_server_valid(monkeypatch):  # valid config loads and shows JSON
     mod = load_deep_tab(monkeypatch)
     mgr = DummyManager()
     mgr.dr_agent = DummyAgent()
@@ -138,7 +138,7 @@ def test_update_mcp_server_valid(monkeypatch):
     assert mgr.dr_agent.closed
 
 
-def test_stop_deep_research_running(monkeypatch, tmp_path):
+def test_stop_deep_research_running(monkeypatch, tmp_path):  # stop agent and expose report file
     mod = load_deep_tab(monkeypatch)
     mgr = DummyManager()
     names = [

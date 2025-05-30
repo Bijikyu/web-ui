@@ -22,14 +22,14 @@ from unittest.mock import patch
 from src.utils.agent_utils import initialize_llm
 
 
-def test_initialize_llm_missing_fields():
+def test_initialize_llm_missing_fields():  # missing provider or model returns None
     result = asyncio.run(initialize_llm(None, 'm', 0.5, None, None))
     assert result is None
     result = asyncio.run(initialize_llm('p', None, 0.5, None, None))
     assert result is None
 
 
-def test_initialize_llm_success():
+def test_initialize_llm_success():  # successful initialization returns model
     mock_model = object()
     with patch('src.utils.agent_utils.llm_provider.get_llm_model', return_value=mock_model) as get_model:
         result = asyncio.run(initialize_llm('openai', 'gpt', 0.3, 'url', 'key'))
@@ -44,7 +44,7 @@ def test_initialize_llm_success():
     assert result is mock_model
 
 
-def test_initialize_llm_exception():
+def test_initialize_llm_exception():  # errors during creation are logged and None returned
     with patch('src.utils.agent_utils.llm_provider.get_llm_model', side_effect=Exception('boom')):
         with patch('src.utils.agent_utils.logger') as log:
             with patch('src.utils.agent_utils.gr.Warning') as warn:

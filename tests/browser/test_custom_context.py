@@ -85,7 +85,7 @@ def make_config(**kwargs):
     base.update(kwargs)
     return SimpleNamespace(**base)
 
-def test_reuse_existing_context(monkeypatch):
+def test_reuse_existing_context(monkeypatch):  # second call reuses first context
     pw_browser = DummyPWBrowser()  # stub PlaywrightBrowser
     browser_config = SimpleNamespace(cdp_url="ws://x", browser_binary_path=None)  # config for reuse
     browser = BrowserBase(browser_config)  # create browser
@@ -98,7 +98,7 @@ def test_reuse_existing_context(monkeypatch):
     assert ctx2 is ctx1  # same context reused
     assert not pw_browser.new_called  # no new context created
 
-def test_load_cookies_and_scripts(tmp_path):
+def test_load_cookies_and_scripts(tmp_path):  # cookies loaded and script injected
     cookie_file = tmp_path / "c.json"  # path for cookie file
     with open(cookie_file, "w") as f:
         json.dump([{"name": "a", "value": "1", "sameSite": "Bad"}], f)  # write cookie
@@ -111,7 +111,7 @@ def test_load_cookies_and_scripts(tmp_path):
     assert ctx.added_cookies == [{"name": "a", "value": "1", "sameSite": "None"}]  # cookie fixed
     assert any("navigator" in s for s in ctx.init_scripts)  # script injected
 
-def test_malformed_cookies_file(monkeypatch):
+def test_malformed_cookies_file(monkeypatch):  # malformed cookie file logs error
     pw_browser = DummyPWBrowser()  # stub PlaywrightBrowser
     browser = BrowserBase(SimpleNamespace(cdp_url=None, browser_binary_path=None))  # browser without reuse condition
     cfg = make_config(cookies_file="bad.json")  # config with bad cookie file
