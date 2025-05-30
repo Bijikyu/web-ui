@@ -13,7 +13,11 @@ Design Philosophy:
 - Flexibility first: Command-line arguments allow adaptation to different deployment scenarios
 - Security by default: Defaults to localhost binding but allows override for public access
 - Port conflict avoidance: Uses non-standard port 7788 to minimize service conflicts
-"""
+CLI Options:
+- --ip: network interface to bind the server
+- --port: port for the HTTP server
+- --theme: name of a validated theme to style the UI
+"""  # expanded documentation of CLI options and startup rationale
 
 # Load environment variables from .env file before any other imports
 # This ensures API keys and configuration are available throughout the application
@@ -63,7 +67,7 @@ def main():
     The queue() call is essential because browser automation tasks can be long-running
     (30+ seconds), and without queuing, the interface would block for other users.
     """
-    parser = argparse.ArgumentParser(description="Gradio WebUI for Browser Agent")
+    parser = argparse.ArgumentParser(description="Gradio WebUI for Browser Agent")  # defines --ip, --port, and --theme options # (documented CLI options)
     
     # IP binding configuration: Security vs. Accessibility tradeoff
     # 
@@ -112,7 +116,7 @@ def main():
     # Parse all command-line arguments
     # This happens after all arguments are defined to catch any parsing errors early
     # and provide helpful error messages to users who provide invalid arguments
-    args = parser.parse_args()
+    args = parser.parse_args()  # populates args.ip args.port args.theme from CLI # (explain parse_args role)
 
     # Create the Gradio interface with the selected theme
     # 
@@ -146,7 +150,7 @@ def main():
     # Alternative considered: Using gunicorn/uvicorn for production deployment
     # Decision: Gradio's built-in server is sufficient for most use cases and simpler to configure
     # For high-scale production, this could be wrapped in a proper WSGI/ASGI server
-    demo.queue().launch(server_name=args.ip, server_port=args.port)
+    demo.queue().launch(server_name=args.ip, server_port=args.port)  # queue keeps UI responsive while launch starts Gradio server # (explain queue/launch behavior)
 
 
 if __name__ == '__main__':
