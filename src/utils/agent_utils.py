@@ -34,8 +34,41 @@ designed to be stateless and thread-safe for use in concurrent environments.
 import logging
 import re
 from typing import Any, Dict, List, Optional
+import gradio as gr  # // import for warning UI when init fails
+from . import llm_provider  # // allow model creation via provider utility
 
 # Module-level logger for consistent logging across all utility functions
 # This enables fine-grained control over utility function debugging and monitoring
 # Essential for troubleshooting complex agent workflows that use multiple utilities
 logger = logging.getLogger(__name__)
+
+
+async def initialize_llm(
+    provider: Optional[str],
+    model_name: Optional[str],
+    temperature: float,
+    base_url: Optional[str],
+    api_key: Optional[str],
+    num_ctx: Optional[int] = None,
+) -> Optional[Any]:
+    """Return chat model or ``None`` when creation fails."""  # // docstring summarizing behavior
+    logger.info(
+        "initialize_llm is running with %s %s", provider, model_name
+    )  # // log start of function
+    if not provider or not model_name:
+        return None  # // guard when fields missing
+    try:
+        model = llm_provider.get_llm_model(
+            provider=provider,
+            model_name=model_name,
+            temperature=temperature,
+            base_url=base_url,
+            api_key=api_key,
+            num_ctx=num_ctx,
+        )  # // create model using provider utility
+        logger.info("initialize_llm is returning %s", model)  # // log return value
+        return model
+    except Exception as err:
+        logger.error("initialize_llm failed: %s", err)  # // log error details
+        gr.Warning(f"LLM provider '{provider}' failed to initialize")  # // warn ui of failure
+        return None
