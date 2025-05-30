@@ -26,6 +26,10 @@ class CustomBrowserContext(BrowserContext):
             config: BrowserContextConfig | None = None,
             state: Optional[BrowserContextState] = None,
     ):
+        """Initialize by delegating to :class:`BrowserContext`.
+
+        The parent class sets up configuration and state, so no extra logic is needed.
+        """  #// added docstring clarifying delegation and lack of extra logic
         super(CustomBrowserContext, self).__init__(browser=browser, config=config, state=state)
 
     async def _create_context(self, browser: PlaywrightBrowser):
