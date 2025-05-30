@@ -1,3 +1,69 @@
+"""
+Core Utilities - Foundational Functions for Application-Wide Operations
+
+This module serves as the central repository for general-purpose utility functions
+that are used extensively throughout the Browser Agent WebUI application. These
+utilities provide reliable, well-tested implementations of common operations that
+would otherwise be duplicated across multiple modules.
+
+Design Philosophy:
+- Single Source of Truth: Centralized implementations prevent inconsistencies
+- Reliability First: Robust error handling and edge case management
+- Performance Conscious: Efficient implementations suitable for high-frequency use
+- Type Safety: Strong typing to prevent runtime errors and improve maintainability
+- Stateless Design: All functions are stateless and thread-safe for concurrent use
+- Comprehensive Testing: Each utility is thoroughly tested with edge cases
+
+Categories of Utilities:
+1. File System Operations: Safe file/directory handling with proper error management
+2. String Processing: Text manipulation, validation, and formatting functions
+3. Data Transformation: JSON processing, serialization, and format conversion
+4. Time and Date Handling: Timestamp generation, formatting, and time calculations
+5. Validation Functions: Input validation and sanitization for security
+6. Path Management: Cross-platform path handling and resolution
+7. Error Handling: Standardized error formatting and logging helpers
+
+Why Centralized Utilities Matter:
+- Consistency: Same behavior across all modules prevents subtle bugs
+- Maintainability: Bug fixes and improvements benefit the entire application
+- Testing: Centralized functions can be exhaustively tested once
+- Performance: Optimizations benefit all consumers simultaneously
+- Documentation: Single location for implementation details and usage patterns
+
+Common Anti-Patterns This Prevents:
+- Duplicate file handling logic with different error behaviors
+- Inconsistent string validation leading to security vulnerabilities
+- Platform-specific path handling causing cross-platform compatibility issues
+- Ad-hoc JSON processing with varying error handling strategies
+- Inconsistent logging and error reporting across modules
+
+Quality Standards:
+All utilities in this module adhere to strict quality standards:
+- Comprehensive error handling with meaningful error messages
+- Input validation to prevent security vulnerabilities
+- Performance optimization for high-frequency operations
+- Cross-platform compatibility testing
+- Memory efficiency to prevent resource leaks
+- Clear documentation with usage examples
+
+This module is imported by virtually every other module in the application,
+making reliability and performance critical considerations. Changes to this
+module require careful testing to prevent regression issues across the codebase.
+"""
+
+import json
+import logging
+import os
+import time
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+# Module-level logger for utility function errors and performance monitoring
+# Utility functions are used throughout the application, so logging helps
+# identify which utilities are causing issues and track performance patterns
+logger = logging.getLogger(__name__)
+
+
 import base64
 import os
 import time

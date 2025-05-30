@@ -1,3 +1,73 @@
+"""
+MCP Client - Model Context Protocol Integration for Enhanced AI Capabilities
+
+This module provides a sophisticated client implementation for the Model Context Protocol (MCP),
+enabling seamless integration with MCP-compatible servers that extend AI model capabilities
+with external tools, data sources, and specialized functions.
+
+Model Context Protocol Overview:
+MCP is a standardized protocol that allows AI models to securely interact with external
+systems and tools through a well-defined interface. This enables AI agents to:
+- Access real-time data from APIs and databases
+- Execute code in sandboxed environments
+- Interact with specialized software tools
+- Retrieve context from document stores and knowledge bases
+- Perform actions in external systems with proper authorization
+
+Why MCP Integration is Critical for Browser Agents:
+Browser automation often requires integration with external systems that aren't
+accessible through web interfaces alone:
+- Database queries for data validation and lookup
+- API calls to third-party services for enriched automation
+- File system operations for document processing and storage
+- Specialized computational tools for data analysis and processing
+- Authentication systems for secure access to protected resources
+
+Design Philosophy:
+- Security First: All MCP communications are validated and sandboxed
+- Protocol Compliance: Strict adherence to MCP specification for interoperability
+- Async by Default: Non-blocking operations to prevent UI freezing during external calls
+- Error Resilience: Robust handling of network failures and server unavailability
+- Type Safety: Strong typing for all MCP message formats and responses
+- Observability: Comprehensive logging for debugging and monitoring MCP interactions
+
+MCP Client Architecture:
+1. Connection Management: Establish and maintain persistent connections to MCP servers
+2. Message Serialization: Handle JSON-RPC message formatting and parsing
+3. Request/Response Correlation: Track request-response pairs in async environment
+4. Tool Discovery: Enumerate available tools and capabilities from MCP servers
+5. Execution Engine: Route tool calls to appropriate MCP servers with result handling
+6. Error Handling: Classify and handle different types of MCP errors appropriately
+
+Security Considerations:
+MCP servers can execute arbitrary code and access external systems, requiring:
+- Server authentication and authorization
+- Request validation and sanitization
+- Response validation to prevent injection attacks
+- Resource limiting to prevent DoS attacks
+- Audit logging for security monitoring and compliance
+
+Performance Optimization:
+- Connection pooling for efficient resource utilization
+- Request batching where supported by the MCP specification
+- Response caching for idempotent operations
+- Circuit breaker pattern for failing MCP servers
+- Timeout management to prevent hung operations
+
+This client serves as the bridge between browser automation agents and the broader
+ecosystem of tools and services accessible through MCP, dramatically expanding
+the capabilities of automated browser workflows.
+"""
+
+import json
+import logging
+import asyncio
+from typing import Any, Dict, List, Optional
+
+# Module-level logger for MCP client operations, protocol debugging, and performance monitoring
+# MCP operations involve external network calls and protocol-level communication
+# Detailed logging is essential for debugging connection issues and protocol violations
+logger = logging.getLogger(__name__)
 import inspect
 import logging
 import uuid

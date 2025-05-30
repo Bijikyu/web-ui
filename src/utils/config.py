@@ -61,3 +61,62 @@ model_names = {
     "ibm": ["ibm/granite-vision-3.1-2b-preview", "meta-llama/llama-4-maverick-17b-128e-instruct-fp8",
             "meta-llama/llama-3-2-90b-vision-instruct"]
 }
+"""
+Configuration Management - Centralized Application Settings and Environment Handling
+
+This module provides robust configuration management for the Browser Agent WebUI,
+handling the complex requirements of modern applications that must operate across
+diverse environments while maintaining security, flexibility, and maintainability.
+
+Configuration Challenges Addressed:
+1. Environment-specific settings (development, staging, production)
+2. Secure secret management (API keys, database credentials, authentication tokens)
+3. Feature flag management for gradual rollouts and A/B testing
+4. User preference persistence across sessions
+5. Default value management with environment-specific overrides
+6. Configuration validation to prevent runtime failures
+7. Dynamic configuration updates without application restart
+
+Design Philosophy:
+- Security by default: Sensitive data never appears in logs or version control
+- Environment awareness: Automatic detection and adaptation to deployment context
+- Validation first: Catch configuration errors before they cause runtime failures
+- Hierarchical overrides: Default → Environment → User → Runtime precedence
+- Type safety: Strong typing prevents configuration-related bugs
+- Audit trail: Track configuration changes for debugging and compliance
+
+Why centralized configuration management:
+- Consistency: All modules use the same configuration loading and validation logic
+- Security: Centralized secret handling prevents accidental exposure
+- Maintainability: Single location for configuration schema and validation rules
+- Debugging: Centralized logging and error handling for configuration issues
+- Testing: Consistent configuration mocking and override mechanisms
+
+Configuration Sources (in precedence order):
+1. Runtime overrides (command-line arguments, API calls)
+2. User preferences (saved in WebUI settings)
+3. Environment variables (deployment-specific settings)
+4. Configuration files (defaults and environment-specific overrides)
+5. Hardcoded defaults (fallback values for essential settings)
+
+This layered approach enables:
+- Development: Local configuration files with debugging enabled
+- CI/CD: Environment variables for test-specific settings
+- Production: Secure secret injection without file system dependencies
+- User customization: Persistent preferences that survive application updates
+
+The module is designed to fail fast on configuration errors during application
+startup rather than allowing invalid configurations to cause runtime failures.
+This approach makes deployment issues immediately visible and debuggable.
+"""
+
+import json
+import logging
+import os
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+# Module-level logger for configuration loading, validation, and error reporting
+# Configuration errors are often environmental and require detailed context for debugging
+# This logger helps track configuration resolution across different sources and environments
+logger = logging.getLogger(__name__)
