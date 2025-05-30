@@ -111,6 +111,6 @@ def get_latest_files(directory: str, file_types: list = ['.webm', '.zip']) -> Di
                 if time.time() - latest.stat().st_mtime > 1.0:
                     latest_files[file_type] = str(latest)
         except Exception as e:
-            print(f"Error getting latest {file_type} file: {e}")  # log but continue on error
+            logger.error(f"Error getting latest {file_type} file: {e}")  # (replaced print with logger for error logging & still continue execution)
 
     return latest_files  # mapping of extension -> path or None
