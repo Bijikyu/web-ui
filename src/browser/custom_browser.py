@@ -1,3 +1,4 @@
+"""Custom browser implementation with enhanced setup."""  # module docstring summarizing purpose
 import asyncio
 
 from patchright.async_api import Browser as PlaywrightBrowser
