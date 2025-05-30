@@ -205,6 +205,7 @@ async def run_single_browser_task(
 
 
 class BrowserSearchInput(BaseModel):
+    """Input schema specifying search queries for one research step."""  #// clarifies usage for search tool
     queries: List[str] = Field(
         description="List of distinct search queries to find information relevant to the research task."
     )
@@ -310,6 +311,7 @@ Provide a list of distinct search queries(up to {max_parallel_browsers}) that ar
 
 
 class ResearchPlanItem(TypedDict):
+    """Represents one actionable item within the overall research plan."""  #// helps understand plan structure
     step: int
     task: str
     status: str  # "pending", "completed", "failed"
@@ -318,6 +320,7 @@ class ResearchPlanItem(TypedDict):
 
 
 class DeepResearchState(TypedDict):
+    """Full set of values persisted between graph nodes during research."""  #// describes purpose of state dict
     task_id: str
     topic: str
     research_plan: List[ResearchPlanItem]
