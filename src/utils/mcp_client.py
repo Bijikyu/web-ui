@@ -79,6 +79,7 @@ from browser_use.controller.registry.views import ActionModel
 from langchain.tools import BaseTool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from pydantic import BaseModel, Field, create_model  # ensure single import for BaseModel and Field
+from src.utils.offline import is_offline  # helper for Codex offline mode
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +93,10 @@ async def setup_mcp_client_and_tools(mcp_server_config: Dict[str, Any]) -> Optio
     """  # expanded docstring
 
     logger.info("Initializing MultiServerMCPClient...")
+
+    if is_offline():  # skip real connection when offline
+        logger.info("Running in CODEX offline mode; MCP client is mocked.")
+        return None  # no connection needed in offline mode
 
     if not mcp_server_config:
         logger.error("No MCP server configuration provided.")

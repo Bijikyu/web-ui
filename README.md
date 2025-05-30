@@ -83,6 +83,7 @@ copy .env.example .env
 cp .env.example .env
 ```
 2. Open `.env` in your preferred text editor and add your API keys and other settings
+   - Set `CODEX=True` to enable offline mode when developing without internet access
 
 ### Option 2: Docker Installation
 
@@ -108,6 +109,7 @@ copy .env.example .env
 cp .env.example .env
 ```
 Edit `.env` with your preferred text editor and add your API keys
+Set `CODEX=True` if the container will run without internet connectivity
 
 3. Run with Docker:
 ```bash
@@ -184,6 +186,7 @@ CHROME_PERSISTENT_SESSION=true docker compose up --build
 
      # VNC Settings
      VNC_PASSWORD=your_vnc_password  # Optional, defaults to "vncpassword"
+     CODEX=False                     # Set True to mock network calls in offline environments
      ```
 
 2. **Platform Support:**
@@ -237,6 +240,11 @@ CHROME_PERSISTENT_SESSION=true docker compose up --build
    ```bash
    pytest
    ```
+
+## Offline Mode
+Set `CODEX=True` in your `.env` file to mock network operations when the
+environment lacks internet access. This allows tests and the application to run
+without contacting external services.
 
 ## Changelog
 - [x] **2025/01/26:** Thanks to @vvincent1234. Now browser-use-webui can combine with DeepSeek-r1 to engage in deep thinking!
