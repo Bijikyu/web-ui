@@ -73,10 +73,14 @@ from src.utils.browser_cleanup import close_browser_resources  # shared cleanup 
 
 logger = logging.getLogger(__name__)
 
-async def close_browser(webui_manager: WebuiManager):
+async def close_browser(webui_manager: WebuiManager):  # cancel tasks and release resources when settings change
+    """Close the active browser and reset state.
+
+    Running tasks are cancelled and browser resources are closed so that
+    updated settings can be applied cleanly without leaving stale tasks or
+    memory leaks.
     """
-    Close browser
-    """
+    # expanded docstring to clarify why resources and tasks are cleaned up
     if webui_manager.bu_current_task and not webui_manager.bu_current_task.done():
         webui_manager.bu_current_task.cancel()
         webui_manager.bu_current_task = None
