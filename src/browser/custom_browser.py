@@ -31,44 +31,44 @@ logger = logging.getLogger(__name__)
 class CustomBrowser(Browser):
 
     async def new_context(self, config: CustomBrowserContextConfig | None = None) -> CustomBrowserContext:
-        """Create a browser context"""
-        browser_config = self.config.model_dump() if self.config else {}
-        context_config = config.model_dump() if config else {}
-        merged_config = {**browser_config, **context_config}
-        return CustomBrowserContext(config=CustomBrowserContextConfig(**merged_config), browser=self)
+        """Create a browser context""" # (added docstring reminder)
+        browser_config = self.config.model_dump() if self.config else {}  # extract base settings from browser
+        context_config = config.model_dump() if config else {}  # take overrides from provided config
+        merged_config = {**browser_config, **context_config}  # merge so explicit context options win
+        return CustomBrowserContext(config=CustomBrowserContextConfig(**merged_config), browser=self)  # instantiate context with merged settings
 
     async def _setup_builtin_browser(self, playwright: Playwright) -> PlaywrightBrowser:
         """Sets up and returns a Playwright Browser instance with anti-detection measures."""
-        assert self.config.browser_binary_path is None, 'browser_binary_path should be None if trying to use the builtin browsers'
+        assert self.config.browser_binary_path is None, 'browser_binary_path should be None if trying to use the builtin browsers'  # ensure builtin browser is used
 
         if self.config.headless:
-            screen_size = {'width': 1920, 'height': 1080}
-            offset_x, offset_y = 0, 0
+            screen_size = {'width': 1920, 'height': 1080}  # fixed size in headless mode for consistency
+            offset_x, offset_y = 0, 0  # no need for adjustment when headless
         else:
-            screen_size = get_screen_resolution()
-            offset_x, offset_y = get_window_adjustments()
+            screen_size = get_screen_resolution()  # match visible screen size in headed mode
+            offset_x, offset_y = get_window_adjustments()  # adjust for OS chrome
 
         chrome_args = {
-            *CHROME_ARGS,
-            *(CHROME_DOCKER_ARGS if IN_DOCKER else []),
-            *(CHROME_HEADLESS_ARGS if self.config.headless else []),
-            *(CHROME_DISABLE_SECURITY_ARGS if self.config.disable_security else []),
-            *(CHROME_DETERMINISTIC_RENDERING_ARGS if self.config.deterministic_rendering else []),
-            f'--window-position={offset_x},{offset_y}',
+            *CHROME_ARGS,  # baseline Playwright flags for stability
+            *(CHROME_DOCKER_ARGS if IN_DOCKER else []),  # additional flags required in Docker
+            *(CHROME_HEADLESS_ARGS if self.config.headless else []),  # hide UI when requested
+            *(CHROME_DISABLE_SECURITY_ARGS if self.config.disable_security else []),  # disable security features when requested
+            *(CHROME_DETERMINISTIC_RENDERING_ARGS if self.config.deterministic_rendering else []),  # ensure repeatable rendering
+            f'--window-position={offset_x},{offset_y}',  # start position so capture tools align correctly
             *self.config.extra_browser_args,
-        }
+        }  # final Chromium argument set
         contain_window_size = False
         for arg in self.config.extra_browser_args:
             if "--window-size" in arg:
                 contain_window_size = True
                 break
         if not contain_window_size:
-            chrome_args.add(f'--window-size={screen_size["width"]},{screen_size["height"]}')
+            chrome_args.add(f'--window-size={screen_size["width"]},{screen_size["height"]}')  # ensure consistent viewport size
 
-        # check if port 9222 is already taken, if so remove the remote-debugging-port arg to prevent conflicts
+        # check if port 9222 is already taken, if so remove the remote-debugging-port arg to prevent conflicts with other Chrome instances
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             if s.connect_ex(('localhost', 9222)) == 0:
-                chrome_args.remove('--remote-debugging-port=9222')
+                chrome_args.remove('--remote-debugging-port=9222')  # avoid crashing when port in use
 
         browser_class = getattr(playwright, self.config.browser_class)
         args = {
@@ -93,5 +93,5 @@ class CustomBrowser(Browser):
             proxy=self.config.proxy.model_dump() if self.config.proxy else None,
             handle_sigterm=False,
             handle_sigint=False,
-        )
+        )  # start browser with computed flags
         return browser
