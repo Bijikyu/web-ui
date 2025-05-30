@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+"""Agent implementation for running browser tasks with signal control."""  # (added module docstring describing purpose)
+
 import asyncio
 import logging
 import os
@@ -26,6 +28,7 @@ SKIP_LLM_API_KEY_VERIFICATION = (
 
 
 class BrowserUseAgent(Agent):
+    """Agent specializing in browser automation with pause/resume handling."""  # (expanded class docstring)
     @time_execution_async("--run (agent)")
     async def run(
         self,
@@ -33,9 +36,27 @@ class BrowserUseAgent(Agent):
         on_step_start: AgentHookFunc | None = None,
         on_step_end: AgentHookFunc | None = None,
     ) -> AgentHistoryList:
-        """Execute the task with maximum number of steps"""
+        """Run the agent until the task completes or a step limit is reached.
 
-        loop = asyncio.get_event_loop()
+        Parameters
+        ----------
+        max_steps: int
+            Maximum number of actions the agent will attempt before giving up.
+        on_step_start: AgentHookFunc | None
+            Optional callback executed before each step begins.
+        on_step_end: AgentHookFunc | None
+            Optional callback executed after each step completes.
+
+        Returns
+        -------
+        AgentHistoryList
+            Recorded history of agent steps and outputs.
+
+        Signal handlers allow pausing or stopping with Ctrl+C so the browser
+        state remains intact during manual inspection.
+        """  # (expanded run docstring with parameters and rationale)
+
+        loop = asyncio.get_event_loop()  # Event loop required for signal handling
 
         # Set up the Ctrl+C signal handler with callbacks specific to this agent
         from browser_use.utils import SignalHandler
@@ -47,7 +68,7 @@ class BrowserUseAgent(Agent):
             custom_exit_callback=None,  # No special cleanup needed on forced exit
             exit_on_second_int=True,
         )
-        signal_handler.register()
+        signal_handler.register()  # Activate registered handlers
 
         # Wait for verification task to complete if it exists
         if hasattr(self, "_verification_task") and not self._verification_task.done():
@@ -58,7 +79,7 @@ class BrowserUseAgent(Agent):
                 pass
 
         try:
-            self._log_agent_run()
+            self._log_agent_run()  # Telemetry hook for agent start
 
             # Execute initial actions if provided
             if self.initial_actions:
@@ -67,24 +88,24 @@ class BrowserUseAgent(Agent):
                 )
                 self.state.last_result = result
 
-            for step in range(max_steps):
-                # Check if waiting for user input after Ctrl+C
+            for step in range(max_steps):  # Iterate up to the step limit
+                # Wait while paused via Ctrl+C
                 while self.state.paused:
                     await asyncio.sleep(0.5)
                     if self.state.stopped:
-                        break
+                        break  # Break if user requested stop
 
                 # Check if we should stop due to too many failures
                 if self.state.consecutive_failures >= self.settings.max_failures:
                     logger.error(
                         f"❌ Stopping due to {self.settings.max_failures} consecutive failures"
                     )
-                    break
+                    break  # Abort on too many failures
 
                 # Check control flags before each step
                 if self.state.stopped:
                     logger.info("Agent stopped")
-                    break
+                    break  # Stop requested externally
 
                 while self.state.paused:
                     await asyncio.sleep(0.2)  # Small delay to prevent CPU spinning
@@ -92,13 +113,13 @@ class BrowserUseAgent(Agent):
                         break
 
                 if on_step_start is not None:
-                    await on_step_start(self)
+                    await on_step_start(self)  # External callback before step
 
-                step_info = AgentStepInfo(step_number=step, max_steps=max_steps)
-                await self.step(step_info)
+                step_info = AgentStepInfo(step_number=step, max_steps=max_steps)  # Metadata for this step
+                await self.step(step_info)  # Perform single agent action
 
                 if on_step_end is not None:
-                    await on_step_end(self)
+                    await on_step_end(self)  # Callback after step completes
 
                 if self.state.history.is_done():
                     if self.settings.validate_output and step < max_steps - 1:
@@ -106,14 +127,14 @@ class BrowserUseAgent(Agent):
                             continue
 
                     await self.log_completion()
-                    break
+                    break  # Task completed successfully
             else:
-                logger.info("❌ Failed to complete task in maximum steps")
+                logger.info("❌ Failed to complete task in maximum steps")  # Step limit reached
 
             return self.state.history
 
         except KeyboardInterrupt:
-            # Already handled by our signal handler, but catch any direct KeyboardInterrupt as well
+            # Handle direct KeyboardInterrupt just in case signal handler failed
             logger.info(
                 "Got KeyboardInterrupt during execution, returning current history"
             )
@@ -136,7 +157,7 @@ class BrowserUseAgent(Agent):
                 )
             )
 
-            await self.close()
+            await self.close()  # Close browser and other resources
 
             if self.settings.generate_gif:
                 output_path: str = "agent_history.gif"
@@ -145,4 +166,4 @@ class BrowserUseAgent(Agent):
 
                 create_history_gif(
                     task=self.task, history=self.state.history, output_path=output_path
-                )
+                )  # Save GIF summarizing session
