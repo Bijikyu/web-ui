@@ -166,7 +166,9 @@ async def collect(gen):
         res.append(item)
     return res
 
-def test_handle_submit_running(monkeypatch):  # ignore input when task running
+def test_handle_submit_running(monkeypatch):
+    """Ignore submit events while an agent task is active."""  #(added docstring summarizing test intent)
+    # ignore input when task running
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     class DummyTask:
@@ -179,7 +181,9 @@ def test_handle_submit_running(monkeypatch):  # ignore input when task running
     assert results == [{}]
 
 
-def test_handle_submit_new_task(monkeypatch):  # submitting text starts agent
+def test_handle_submit_new_task(monkeypatch):
+    """Submitting user input should launch a new agent task."""  #(added docstring summarizing test intent)
+    # submitting text starts agent
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     async def fake_run(m, c):
@@ -191,7 +195,9 @@ def test_handle_submit_new_task(monkeypatch):  # submitting text starts agent
     assert results == [{"ok": True}]
 
 
-def test_handle_pause_resume(monkeypatch):  # toggle pause state of running agent
+def test_handle_pause_resume(monkeypatch):
+    """Pause or resume the running agent when button clicked."""  #(added docstring summarizing test intent)
+    # toggle pause state of running agent
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     mgr.bu_agent = mod.BrowserUseAgent()
@@ -205,14 +211,18 @@ def test_handle_pause_resume(monkeypatch):  # toggle pause state of running agen
     assert mgr.bu_agent.state.paused
 
 
-def test_handle_pause_resume_no_task(monkeypatch):  # pause ignored when no task
+def test_handle_pause_resume_no_task(monkeypatch):
+    """Pause/resume click has no effect when no task running."""  #(added docstring summarizing test intent)
+    # pause ignored when no task
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, _ = make_manager(mod, Manager)
     res = asyncio.run(mod.handle_pause_resume(mgr))
     assert res == {}
 
 
-def test_handle_stop_running(monkeypatch):  # stop button halts agent
+def test_handle_stop_running(monkeypatch):
+    """Stop button should halt the agent and disable controls."""  #(added docstring summarizing test intent)
+    # stop button halts agent
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     mgr.bu_agent = mod.BrowserUseAgent()
@@ -230,7 +240,9 @@ def test_handle_stop_running(monkeypatch):  # stop button halts agent
     assert res[rb] == mod.gr.update(interactive=False)
 
 
-def test_handle_stop_no_task(monkeypatch):  # stop without active task resets UI
+def test_handle_stop_no_task(monkeypatch):
+    """Stop click when idle resets button states."""  #(added docstring summarizing test intent)
+    # stop without active task resets UI
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     res = asyncio.run(mod.handle_stop(mgr))
@@ -244,7 +256,9 @@ def test_handle_stop_no_task(monkeypatch):  # stop without active task resets UI
     assert res[cb] == mod.gr.update(interactive=True)
 
 
-def test_handle_clear(monkeypatch):  # clear button cancels task and resets state
+def test_handle_clear(monkeypatch):
+    """Clear button cancels task and resets manager state."""  #(added docstring summarizing test intent)
+    # clear button cancels task and resets state
     mod, Manager, Controller = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     mgr.bu_agent = mod.BrowserUseAgent()

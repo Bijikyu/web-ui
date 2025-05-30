@@ -78,7 +78,9 @@ class Config:
         self.browser_binary_path = kwargs.get("browser_binary_path")
 
 
-def test_setup_builtin_browser_headless(monkeypatch):  # headless config adds required args
+def test_setup_builtin_browser_headless(monkeypatch):
+    """Headless mode should include all required Chrome flags."""  #(added docstring summarizing test intent)
+    # headless config adds required args
     cfg = Config(headless=True, disable_security=True, deterministic_rendering=True, extra_browser_args=["--foo"])  # configuration for headless
     browser = CustomBrowser(config=cfg)  # create browser instance
     pw = Playwright()  # stub Playwright object
@@ -92,7 +94,9 @@ def test_setup_builtin_browser_headless(monkeypatch):  # headless config adds re
     expected = {"--base", "--headless", "--no-sec", "--det", "--window-position=0,0", "--foo", "--window-size=1920,1080", "--remote-debugging-port=9222"}  # expected args
     assert args == expected  # verify all args
 
-def test_setup_builtin_browser_port_conflict(monkeypatch):  # omit debug port when in use
+def test_setup_builtin_browser_port_conflict(monkeypatch):
+    """Skip remote debugging when port 9222 is unavailable."""  #(added docstring summarizing test intent)
+    # omit debug port when in use
     cfg = Config(headless=False, extra_browser_args=[])  # configuration no headless
     browser = CustomBrowser(config=cfg)  # create browser instance
     pw = Playwright()  # stub Playwright

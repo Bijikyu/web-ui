@@ -230,7 +230,9 @@ def teardown_stubs(modules):
 import importlib
 
 
-def test_run_agent_task_simple(tmp_path):  # run agent task successfully with input
+def test_run_agent_task_simple(tmp_path):
+    """Execute a basic browser agent task and expect success."""  #(added docstring summarizing test intent)
+    # run agent task successfully with input
     modules = setup_stubs()
     orig_manager = sys.modules.pop("src.webui.webui_manager", None)
     orig_tab = sys.modules.pop("src.webui.components.browser_use_agent_tab", None)
@@ -295,7 +297,9 @@ def test_run_agent_task_simple(tmp_path):  # run agent task successfully with in
     teardown_stubs(modules)
 
 
-def test_run_agent_task_missing_input(tmp_path):  # empty input should not start agent
+def test_run_agent_task_missing_input(tmp_path):
+    """Submitting empty input should not start an agent task."""  #(added docstring summarizing test intent)
+    # empty input should not start agent
     modules = setup_stubs()
     orig_manager = sys.modules.pop("src.webui.webui_manager", None)
     orig_tab = sys.modules.pop("src.webui.components.browser_use_agent_tab", None)
@@ -355,7 +359,9 @@ def test_run_agent_task_missing_input(tmp_path):  # empty input should not start
     teardown_stubs(modules)
 
 
-def test_run_agent_task_invalid_mcp_config(tmp_path):  # invalid MCP config shows error message
+def test_run_agent_task_invalid_mcp_config(tmp_path):
+    """Invalid MCP configuration should surface an error message."""  #(added docstring summarizing test intent)
+    # invalid MCP config shows error message
     modules = setup_stubs()
     orig_manager = sys.modules.pop("src.webui.webui_manager", None)
     orig_tab = sys.modules.pop("src.webui.components.browser_use_agent_tab", None)

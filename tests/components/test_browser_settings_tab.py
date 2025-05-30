@@ -191,7 +191,9 @@ class FakeTask:
     def done(self):
         return False
 
-def test_checkbox_change_triggers_cleanup(monkeypatch):  # toggling checkboxes closes active browser
+def test_checkbox_change_triggers_cleanup(monkeypatch):
+    """Changing settings should close any active browser resources."""  #(added docstring summarizing test intent)
+    # toggling checkboxes closes active browser
     manager = WebuiManager()
     manager.init_browser_use_agent()
 

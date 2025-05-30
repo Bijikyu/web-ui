@@ -22,6 +22,7 @@ from src.utils import utils
 
 
 async def test_browser_use_agent():
+    """Run a browser-use agent end-to-end with manual config."""  #(added docstring summarizing test intent)
     from browser_use.browser.browser import Browser, BrowserConfig
     from browser_use.browser.context import (
         BrowserContextConfig,
@@ -171,6 +172,7 @@ async def test_browser_use_agent():
 
 
 async def test_browser_use_parallel():
+    """Run multiple agents in parallel to validate concurrency logic."""  #(added docstring summarizing test intent)
     pytest.importorskip("patchright", reason="patchright required")  # (skip if patchright missing)
     from browser_use.browser.context import BrowserContextWindowSize
     from browser_use.browser.browser import BrowserConfig
@@ -340,6 +342,7 @@ async def test_browser_use_parallel():
 
 
 async def test_deep_research_agent():
+    """Run the DeepResearchAgent workflow using real tools."""  #(added docstring summarizing test intent)
     from src.agent.deep_research.deep_research_agent import DeepResearchAgent, PLAN_FILENAME, REPORT_FILENAME
     from src.utils import llm_provider
 

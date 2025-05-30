@@ -99,7 +99,9 @@ class AgentOutputLike:
         self.current_state = current_state
 
 
-def test_get_config_value_primary_tab(helpers_module):  # fetch value from primary tab
+def test_get_config_value_primary_tab(helpers_module):
+    """Retrieve configuration value from the active tab components."""  #(added docstring summarizing test intent)
+    # fetch value from primary tab
     mod, WebuiManager = helpers_module
     manager = WebuiManager()
     comp = DummyComponent()
@@ -108,7 +110,9 @@ def test_get_config_value_primary_tab(helpers_module):  # fetch value from prima
     assert mod._get_config_value(manager, comp_dict, "test", "def") == 42
 
 
-def test_get_config_value_fallback_tabs(helpers_module):  # fallback to other tabs when missing
+def test_get_config_value_fallback_tabs(helpers_module):
+    """Look for configuration values in alternate tabs when absent."""  #(added docstring summarizing test intent)
+    # fallback to other tabs when missing
     mod, WebuiManager = helpers_module
     manager = WebuiManager()
     comp = DummyComponent()
@@ -117,14 +121,18 @@ def test_get_config_value_fallback_tabs(helpers_module):  # fallback to other ta
     assert mod._get_config_value(manager, comp_dict, "test", None) == "ok"
 
 
-def test_get_config_value_default(helpers_module):  # use provided default when absent
+def test_get_config_value_default(helpers_module):
+    """Return provided default when value is missing in all tabs."""  #(added docstring summarizing test intent)
+    # use provided default when absent
     mod, WebuiManager = helpers_module
     manager = WebuiManager()
     manager.comps = {}
     assert mod._get_config_value(manager, {}, "missing", "dft") == "dft"
 
 
-def test_format_agent_output_json(helpers_module):  # format AgentOutput to JSON block
+def test_format_agent_output_json(helpers_module):
+    """Convert AgentOutput object to formatted JSON markup."""  #(added docstring summarizing test intent)
+    # format AgentOutput to JSON block
     mod, _ = helpers_module
     ao = AgentOutputLike([Dumpable("a")], Dumpable("s"))
     res = mod._format_agent_output(ao)
@@ -135,7 +143,9 @@ def test_format_agent_output_json(helpers_module):  # format AgentOutput to JSON
     assert data == {"current_state": {"data": "s"}, "action": [{"data": "a"}]}
 
 
-def test_format_agent_output_attribute_error(helpers_module):  # handle objects lacking model_dump
+def test_format_agent_output_attribute_error(helpers_module):
+    """Handle objects without model_dump when formatting output."""  #(added docstring summarizing test intent)
+    # handle objects lacking model_dump
     mod, _ = helpers_module
     class NoDump:
         pass

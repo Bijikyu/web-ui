@@ -98,14 +98,18 @@ class DummyAgent:
 
 
 
-def test_read_file_safe_valid(monkeypatch, tmp_path):  # return file contents when readable
+def test_read_file_safe_valid(monkeypatch, tmp_path):
+    """Reading an existing file returns its text contents."""  #(added docstring summarizing test intent)
+    # return file contents when readable
     mod = load_deep_tab(monkeypatch)
     file_path = tmp_path / "f.txt"
     file_path.write_text("hello")
     assert mod._read_file_safe(str(file_path)) == "hello"
 
 
-def test_read_file_safe_error(monkeypatch, caplog):  # log and return None on error
+def test_read_file_safe_error(monkeypatch, caplog):
+    """Errors while reading result in log entry and None."""  #(added docstring summarizing test intent)
+    # log and return None on error
     mod = load_deep_tab(monkeypatch)
     monkeypatch.setattr(mod.os.path, "exists", lambda p: True)
     monkeypatch.setattr("builtins.open", lambda *a, **k: (_ for _ in ()).throw(OSError("bad")))
@@ -115,7 +119,9 @@ def test_read_file_safe_error(monkeypatch, caplog):  # log and return None on er
     assert "Error reading file missing.txt" in caplog.text
 
 
-def test_update_mcp_server_invalid(monkeypatch):  # invalid config path hides config
+def test_update_mcp_server_invalid(monkeypatch):
+    """Hide configuration view if MCP config file is invalid."""  #(added docstring summarizing test intent)
+    # invalid config path hides config
     mod = load_deep_tab(monkeypatch)
     mgr = DummyManager()
     mgr.dr_agent = DummyAgent()
@@ -126,7 +132,9 @@ def test_update_mcp_server_invalid(monkeypatch):  # invalid config path hides co
     assert mgr.dr_agent.closed
 
 
-def test_update_mcp_server_valid(monkeypatch):  # valid config loads and shows JSON
+def test_update_mcp_server_valid(monkeypatch):
+    """Display loaded MCP configuration JSON."""  #(added docstring summarizing test intent)
+    # valid config loads and shows JSON
     mod = load_deep_tab(monkeypatch)
     mgr = DummyManager()
     mgr.dr_agent = DummyAgent()
@@ -138,7 +146,9 @@ def test_update_mcp_server_valid(monkeypatch):  # valid config loads and shows J
     assert mgr.dr_agent.closed
 
 
-def test_stop_deep_research_running(monkeypatch, tmp_path):  # stop agent and expose report file
+def test_stop_deep_research_running(monkeypatch, tmp_path):
+    """Stop a running deep research agent and show final report."""  #(added docstring summarizing test intent)
+    # stop agent and expose report file
     mod = load_deep_tab(monkeypatch)
     mgr = DummyManager()
     names = [

@@ -98,58 +98,80 @@ def test_llm(config, query, image_path=None, system_message=None):  # helper to 
         print(ai_msg.reasoning_content)
     print(ai_msg.content)
 
-def test_openai_model():  # verify OpenAI provider path
+def test_openai_model():
+    """Verify OpenAI provider integration path."""  #(added docstring summarizing test intent)
+    # verify OpenAI provider path
     config = LLMConfig(provider="openai", model_name="gpt-4o")
     test_llm(config, "Describe this image", "assets/examples/test.png")
 
 
-def test_google_model():  # verify Google provider path
+def test_google_model():
+    """Verify Google provider integration path."""  #(added docstring summarizing test intent)
+    # verify Google provider path
     # Enable your API key first if you haven't: https://ai.google.dev/palm_docs/oauth_quickstart
     config = LLMConfig(provider="google", model_name="gemini-2.0-flash-exp")
     test_llm(config, "Describe this image", "assets/examples/test.png")
 
 
-def test_azure_openai_model():  # verify Azure OpenAI provider path
+def test_azure_openai_model():
+    """Verify Azure OpenAI provider integration path."""  #(added docstring summarizing test intent)
+    # verify Azure OpenAI provider path
     config = LLMConfig(provider="azure_openai", model_name="gpt-4o")
     test_llm(config, "Describe this image", "assets/examples/test.png")
 
 
-def test_deepseek_model():  # verify DeepSeek provider path
+def test_deepseek_model():
+    """Verify DeepSeek provider integration path."""  #(added docstring summarizing test intent)
+    # verify DeepSeek provider path
     config = LLMConfig(provider="deepseek", model_name="deepseek-chat")
     test_llm(config, "Who are you?")
 
 
-def test_deepseek_r1_model():  # verify DeepSeek Reasoner path
+def test_deepseek_r1_model():
+    """Verify DeepSeek Reasoner model works via API."""  #(added docstring summarizing test intent)
+    # verify DeepSeek Reasoner path
     config = LLMConfig(provider="deepseek", model_name="deepseek-reasoner")
     test_llm(config, "Which is greater, 9.11 or 9.8?", system_message="You are a helpful AI assistant.")
 
 
-def test_ollama_model():  # verify Ollama provider path
+def test_ollama_model():
+    """Verify Ollama provider integration path."""  #(added docstring summarizing test intent)
+    # verify Ollama provider path
     config = LLMConfig(provider="ollama", model_name="qwen2.5:7b")
     test_llm(config, "Sing a ballad of LangChain.")
 
 
-def test_deepseek_r1_ollama_model():  # verify DeepSeek R1 via Ollama
+def test_deepseek_r1_ollama_model():
+    """Verify DeepSeek R1 model served via Ollama."""  #(added docstring summarizing test intent)
+    # verify DeepSeek R1 via Ollama
     config = LLMConfig(provider="ollama", model_name="deepseek-r1:14b")
     test_llm(config, "How many 'r's are in the word 'strawberry'?")
 
 
-def test_mistral_model():  # verify Mistral provider path
+def test_mistral_model():
+    """Verify Mistral provider integration path."""  #(added docstring summarizing test intent)
+    # verify Mistral provider path
     config = LLMConfig(provider="mistral", model_name="pixtral-large-latest")
     test_llm(config, "Describe this image", "assets/examples/test.png")
 
 
-def test_moonshot_model():  # verify Moonshot provider path
+def test_moonshot_model():
+    """Verify Moonshot provider integration path."""  #(added docstring summarizing test intent)
+    # verify Moonshot provider path
     config = LLMConfig(provider="moonshot", model_name="moonshot-v1-32k-vision-preview")
     test_llm(config, "Describe this image", "assets/examples/test.png")
 
 
-def test_ibm_model():  # verify IBM provider path
+def test_ibm_model():
+    """Verify IBM provider integration path."""  #(added docstring summarizing test intent)
+    # verify IBM provider path
     config = LLMConfig(provider="ibm", model_name="meta-llama/llama-4-maverick-17b-128e-instruct-fp8")
     test_llm(config, "Describe this image", "assets/examples/test.png")
 
 
-def test_qwen_model():  # verify Alibaba Qwen provider path
+def test_qwen_model():
+    """Verify Alibaba Qwen provider integration path."""  #(added docstring summarizing test intent)
+    # verify Alibaba Qwen provider path
     config = LLMConfig(provider="alibaba", model_name="qwen3-30b-a3b")
     test_llm(config, "How many 'r's are in the word 'strawberry'?")
 

@@ -121,7 +121,9 @@ def setup_stubs():
     return modules.keys()
 
 
-def test_run_stops_when_done(monkeypatch):  # agent exits loop when done flag set
+def test_run_stops_when_done(monkeypatch):
+    """Agent loop exits when history indicates completion."""  #(added docstring summarizing test intent)
+    # agent exits loop when done flag set
     mods = setup_stubs()
     import importlib.util, os
     path = os.path.join(os.path.dirname(__file__), '..', '..', 'src', 'agent', 'browser_use', 'browser_use_agent.py')
@@ -142,7 +144,9 @@ def test_run_stops_when_done(monkeypatch):  # agent exits loop when done flag se
         sys.modules.pop(m, None)
 
 
-def test_keyboard_interrupt(monkeypatch):  # graceful exit on KeyboardInterrupt
+def test_keyboard_interrupt(monkeypatch):
+    """Gracefully exit when KeyboardInterrupt is raised."""  #(added docstring summarizing test intent)
+    # graceful exit on KeyboardInterrupt
     mods = setup_stubs()
     import importlib.util, os
     path = os.path.join(os.path.dirname(__file__), '..', '..', 'src', 'agent', 'browser_use', 'browser_use_agent.py')

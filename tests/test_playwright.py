@@ -18,7 +18,9 @@ logger = logging.getLogger(__name__)  # (added logger for debug output)
 
 
 @pytest.mark.skip(reason="requires manual browser interaction")
-def test_connect_browser():  # manually launch Playwright browser
+def test_connect_browser():
+    """Launch a Playwright browser to verify manual connection works."""  #(added docstring summarizing test intent)
+    # manually launch Playwright browser
     import os
     from patchright.sync_api import sync_playwright
 
