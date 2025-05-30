@@ -112,6 +112,7 @@ logger = logging.getLogger(__name__)
 
 
 class DeepSeekR1ChatOpenAI(ChatOpenAI):
+    """OpenAI client wrapper returning reasoning content alongside text."""  # class docstring
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -174,6 +175,7 @@ class DeepSeekR1ChatOpenAI(ChatOpenAI):
 
 
 class DeepSeekR1ChatOllama(ChatOllama):
+    """Ollama wrapper that splits reasoning tags from final content."""  # class docstring
 
     async def ainvoke(
             self,
@@ -242,6 +244,7 @@ def get_llm_model(provider: str, **kwargs):
     - API keys are sourced from environment variables first for security
     - Explicit API key parameter allows testing but should be used carefully
     - No API keys are logged or exposed in error messages
+    - Environment variable naming uses ``<PROVIDER>_API_KEY`` for consistency
     """
 
     # Handle API key authentication for most providers

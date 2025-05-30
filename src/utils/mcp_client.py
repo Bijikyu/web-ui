@@ -84,15 +84,12 @@ logger = logging.getLogger(__name__)
 
 
 async def setup_mcp_client_and_tools(mcp_server_config: Dict[str, Any]) -> Optional[MultiServerMCPClient]:
-    """
-    Initializes the MultiServerMCPClient, connects to servers, fetches tools,
-    filters them, and returns a flat list of usable tools and the client instance.
+    """Initialize MCP client and return the connected instance.
 
-    Returns:
-        A tuple containing:
-        - list[BaseTool]: The filtered list of usable LangChain tools.
-        - MultiServerMCPClient | None: The initialized and started client instance, or None on failure.
-    """
+    The configuration may contain a ``mcpServers`` key describing multiple
+    endpoints. The client is started asynchronously and ``None`` is returned if
+    connection fails.
+    """  # expanded docstring
 
     logger.info("Initializing MultiServerMCPClient...")
 
@@ -113,7 +110,7 @@ async def setup_mcp_client_and_tools(mcp_server_config: Dict[str, Any]) -> Optio
 
 
 def create_tool_param_model(tool: BaseTool) -> Type[BaseModel]:
-    """Creates a Pydantic model from a LangChain tool's schema"""
+    """Generate a Pydantic model matching the given tool schema."""  # expanded docstring
 
     # Get tool schema information
     json_schema = tool.args_schema
@@ -201,7 +198,7 @@ def create_tool_param_model(tool: BaseTool) -> Type[BaseModel]:
 
 
 def resolve_type(prop_details: Dict[str, Any], prefix: str = "") -> Any:
-    """Recursively resolves JSON schema type to Python/Pydantic type"""
+    """Convert JSON schema entries to appropriate Python types."""  # expanded docstring
 
     # Handle reference types
     if '$ref' in prop_details:

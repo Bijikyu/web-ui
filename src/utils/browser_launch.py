@@ -66,11 +66,17 @@ logger = logging.getLogger(__name__)
 
 
 def build_browser_launch_options(config: Dict[str, Any]) -> Tuple[Optional[str], List[str]]:  # build browser options
-    """Build browser binary path and extra launch arguments."""  # function description
-    window_w = config.get("window_width", 1280)  # width from config
-    window_h = config.get("window_height", 1100)  # height from config
-    extra_args = [f"--window-size={window_w},{window_h}"]  # default arg list
-    browser_user_data_dir = config.get("user_data_dir", None)  # custom data dir
+    """Build browser binary path and extra launch arguments.
+
+    The ``config`` dict may include ``window_width``, ``window_height``,
+    ``user_data_dir``, ``use_own_browser`` and ``browser_binary_path``.
+    Environment variables ``CHROME_PATH`` and ``CHROME_USER_DATA`` override
+    path settings when ``use_own_browser`` is true.
+    """  # function description expanded
+    window_w = config.get("window_width", 1280)  # width from config; default 1280
+    window_h = config.get("window_height", 1100)  # height from config; default 1100
+    extra_args = [f"--window-size={window_w},{window_h}"]  # window geometry arg
+    browser_user_data_dir = config.get("user_data_dir", None)  # custom data dir for persistent profiles
     if browser_user_data_dir:
         extra_args.append(f"--user-data-dir={browser_user_data_dir}")  # add dir option
     use_own_browser = config.get("use_own_browser", False)  # check custom browser usage

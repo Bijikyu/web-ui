@@ -1,8 +1,10 @@
+"""Utility helpers for loading configuration files safely."""  # module docstring explaining purpose
 import json, logging, os  # new utility imports for safe json loading
 logger = logging.getLogger(__name__)  # logger setup for this module
 
 
 def load_json_safe(path: str):  # utility to safely load json
+    """Load a JSON file and return ``None`` on failure."""  # docstring describing edge cases
     if not path or not os.path.exists(path):  # validate path exists
         return None  # return None if invalid
     try:
@@ -14,6 +16,7 @@ def load_json_safe(path: str):  # utility to safely load json
 
 
 def load_mcp_server_config(path: str, logger) -> dict | None:  # load MCP server config with validation
+    """Load MCP server JSON returning ``None`` when the file is invalid."""  # docstring describing function
     if not path or not os.path.exists(path) or not path.endswith('.json'):  # validate path exists and is json
         logger.warning(f"{path} is not a valid MCP file.")  # warn when invalid
         return None  # return None on invalid path
@@ -21,3 +24,4 @@ def load_mcp_server_config(path: str, logger) -> dict | None:  # load MCP server
     if data is None:  # check load failure
         logger.warning(f"{path} cannot be loaded.")  # warn when loading fails
     return data  # return parsed json or None
+

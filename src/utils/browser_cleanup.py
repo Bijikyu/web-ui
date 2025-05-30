@@ -50,6 +50,7 @@ logger = logging.getLogger(__name__)
 
 # Async function to close browser resources (context and browser)
 async def close_browser_resources(browser, context):
+    """Safely close Playwright context and browser objects."""  # docstring added explaining function use
     # Check if a browser context is provided
     if context:
         # Log the closing of the browser context
@@ -72,4 +73,4 @@ async def close_browser_resources(browser, context):
         except Exception as e:
             # Log the error if closing the browser fails
             logger.error(f"Error closing browser: {e}")
-`
+

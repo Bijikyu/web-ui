@@ -76,19 +76,26 @@ import uuid
 
 
 def ensure_dir(path: str):
-    os.makedirs(path, exist_ok=True)  # create directory if missing
+    """Create the directory if it does not already exist."""  # added short docstring describing function
+    os.makedirs(path, exist_ok=True)  # create directory if missing; exist_ok handles race conditions
 
 
 def encode_image(img_path):
+    """Return base64 string for an image path or ``None`` when missing."""  # added docstring explaining return
     if not img_path:
         return None
-    with open(img_path, "rb") as fin:
-        image_data = base64.b64encode(fin.read()).decode("utf-8")
+    with open(img_path, "rb") as fin:  # open as binary for encoding
+        image_data = base64.b64encode(fin.read()).decode("utf-8")  # convert to base64 string
     return image_data
 
 
 def get_latest_files(directory: str, file_types: list = ['.webm', '.zip']) -> Dict[str, Optional[str]]:
-    """Get the latest recording and trace files"""
+    """Return mapping of extensions to the most recent file path in ``directory``.
+
+    This helps the UI quickly access newly created recording or trace files.
+    Missing directories are automatically created and the mapping values remain
+    ``None`` when no files are found.
+    """  # expanded docstring for usage
     latest_files: Dict[str, Optional[str]] = {ext: None for ext in file_types}
 
     if not os.path.exists(directory):
@@ -97,13 +104,13 @@ def get_latest_files(directory: str, file_types: list = ['.webm', '.zip']) -> Di
 
     for file_type in file_types:
         try:
-            matches = list(Path(directory).rglob(f"*{file_type}"))
+            matches = list(Path(directory).rglob(f"*{file_type}"))  # gather matching files
             if matches:
                 latest = max(matches, key=lambda p: p.stat().st_mtime)
                 # Only return files that are complete (not being written)
                 if time.time() - latest.stat().st_mtime > 1.0:
                     latest_files[file_type] = str(latest)
         except Exception as e:
-            print(f"Error getting latest {file_type} file: {e}")
+            print(f"Error getting latest {file_type} file: {e}")  # log but continue on error
 
-    return latest_files
+    return latest_files  # mapping of extension -> path or None
