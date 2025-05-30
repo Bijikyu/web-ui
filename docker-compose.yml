@@ -1,62 +1,62 @@
 services:
-  browser-use-webui:
-    platform: linux/amd64
+  browser-use-webui: # service exposing the Browser Use Web UI
+    platform: linux/amd64 # ensures image built for consistent architecture
     build:
-      context: .
-      dockerfile: ${DOCKERFILE:-Dockerfile}
+      context: . # build from current directory
+      dockerfile: ${DOCKERFILE:-Dockerfile} # allows overriding dockerfile name
       args:
-        TARGETPLATFORM: ${TARGETPLATFORM:-linux/amd64}
+        TARGETPLATFORM: ${TARGETPLATFORM:-linux/amd64} # enable cross-platform build
     ports:
-      - "7788:7788"  # Gradio default port
-      - "6080:6080"  # noVNC web interface
-      - "5901:5901"  # VNC port
-      - "9222:9222"  # Chrome remote debugging port
+      - "7788:7788"  # exposes gradio interface to host (clarified)
+      - "6080:6080"  # maps noVNC viewer for browser monitoring (clarified)
+      - "5901:5901"  # exposes VNC server to host (clarified)
+      - "9222:9222"  # forwards chrome debugging port (clarified)
     environment:
-      - OPENAI_ENDPOINT=${OPENAI_ENDPOINT:-https://api.openai.com/v1}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - ANTHROPIC_ENDPOINT=${ANTHROPIC_ENDPOINT:-https://api.anthropic.com}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT:-}
-      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY:-}
-      - DEEPSEEK_ENDPOINT=${DEEPSEEK_ENDPOINT:-https://api.deepseek.com}
-      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
-      - OLLAMA_ENDPOINT=${OLLAMA_ENDPOINT:-http://localhost:11434}
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
-      - MISTRAL_ENDPOINT=${MISTRAL_ENDPOINT:-https://api.mistral.ai/v1}
-      - ALIBABA_ENDPOINT=${ALIBABA_ENDPOINT:-https://dashscope.aliyuncs.com/compatible-mode/v1}
-      - ALIBABA_API_KEY=${ALIBABA_API_KEY:-}
-      - MOONSHOT_ENDPOINT=${MOONSHOT_ENDPOINT:-https://api.moonshot.cn/v1}
-      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY:-}
-      - IBM_API_KEY=${IBM_API_KEY:-}
-      - IBM_ENDPOINT=${IBM_ENDPOINT:-https://us-south.ml.cloud.ibm.com}
-      - IBM_PROJECT_ID=${IBM_PROJECT_ID:-}
-      - BROWSER_USE_LOGGING_LEVEL=${BROWSER_USE_LOGGING_LEVEL:-info}
-      - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-false}
-      - CHROME_PATH=/usr/bin/google-chrome
-      - CHROME_USER_DATA=/app/data/chrome_data
-      - CHROME_PERSISTENT_SESSION=${CHROME_PERSISTENT_SESSION:-false}
-      - CHROME_CDP=${CHROME_CDP:-http://localhost:9222}
-      - DISPLAY=:99
-      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-      - RESOLUTION=${RESOLUTION:-1920x1080x24}
-      - RESOLUTION_WIDTH=${RESOLUTION_WIDTH:-1920}
-      - RESOLUTION_HEIGHT=${RESOLUTION_HEIGHT:-1080}
-      - VNC_PASSWORD=${VNC_PASSWORD:-vncpassword}
-      - CHROME_DEBUGGING_PORT=9222
-      - CHROME_DEBUGGING_HOST=localhost
+      - OPENAI_ENDPOINT=${OPENAI_ENDPOINT:-https://api.openai.com/v1} # base URL for OpenAI API (clarified)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-} # API key for OpenAI models (clarified)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-} # key for Anthropic models (clarified)
+      - ANTHROPIC_ENDPOINT=${ANTHROPIC_ENDPOINT:-https://api.anthropic.com} # base URL for Anthropic API (clarified)
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-} # key for Google generative models (clarified)
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT:-} # override for Azure OpenAI endpoint (clarified)
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY:-} # credential for Azure OpenAI (clarified)
+      - DEEPSEEK_ENDPOINT=${DEEPSEEK_ENDPOINT:-https://api.deepseek.com} # base URL for DeepSeek API (clarified)
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-} # key for DeepSeek access (clarified)
+      - OLLAMA_ENDPOINT=${OLLAMA_ENDPOINT:-http://localhost:11434} # location of local Ollama server (clarified)
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-} # key for Mistral API usage (clarified)
+      - MISTRAL_ENDPOINT=${MISTRAL_ENDPOINT:-https://api.mistral.ai/v1} # base URL for Mistral service (clarified)
+      - ALIBABA_ENDPOINT=${ALIBABA_ENDPOINT:-https://dashscope.aliyuncs.com/compatible-mode/v1} # Alibaba Cloud model endpoint (clarified)
+      - ALIBABA_API_KEY=${ALIBABA_API_KEY:-} # key for Alibaba models (clarified)
+      - MOONSHOT_ENDPOINT=${MOONSHOT_ENDPOINT:-https://api.moonshot.cn/v1} # Moonshot API URL (clarified)
+      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY:-} # key for Moonshot service (clarified)
+      - IBM_API_KEY=${IBM_API_KEY:-} # IBM watsonx API key (clarified)
+      - IBM_ENDPOINT=${IBM_ENDPOINT:-https://us-south.ml.cloud.ibm.com} # base URL for IBM service (clarified)
+      - IBM_PROJECT_ID=${IBM_PROJECT_ID:-} # IBM project identifier (clarified)
+      - BROWSER_USE_LOGGING_LEVEL=${BROWSER_USE_LOGGING_LEVEL:-info} # set UI log level (clarified)
+      - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-false} # toggle telemetry sharing (clarified)
+      - CHROME_PATH=/usr/bin/google-chrome # container chrome binary path (clarified)
+      - CHROME_USER_DATA=/app/data/chrome_data # persistent chrome profile path (clarified)
+      - CHROME_PERSISTENT_SESSION=${CHROME_PERSISTENT_SESSION:-false} # keep browser open between tasks (clarified)
+      - CHROME_CDP=${CHROME_CDP:-http://localhost:9222} # Chrome DevTools protocol address (clarified)
+      - DISPLAY=:99 # display number for Xvfb (clarified)
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright # location of Playwright browsers (clarified)
+      - RESOLUTION=${RESOLUTION:-1920x1080x24} # default virtual display resolution (clarified)
+      - RESOLUTION_WIDTH=${RESOLUTION_WIDTH:-1920} # override width portion (clarified)
+      - RESOLUTION_HEIGHT=${RESOLUTION_HEIGHT:-1080} # override height portion (clarified)
+      - VNC_PASSWORD=${VNC_PASSWORD:-vncpassword} # VNC login password (clarified)
+      - CHROME_DEBUGGING_PORT=9222 # port for debugging chrome (clarified)
+      - CHROME_DEBUGGING_HOST=localhost # host for debugging chrome (clarified)
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
-    restart: unless-stopped
-    shm_size: '2gb'
+      - /tmp/.X11-unix:/tmp/.X11-unix # share X11 socket for GUI apps (clarified)
+    restart: unless-stopped # auto restart container unless manually stopped (clarified)
+    shm_size: '2gb' # allocate shared memory for chromium (clarified)
     cap_add:
-      - SYS_ADMIN
+      - SYS_ADMIN # required capability for chromium sandbox (clarified)
     security_opt:
-      - seccomp=unconfined
+      - seccomp=unconfined # disable seccomp for chrome sandbox (clarified)
     tmpfs:
-      - /tmp
+      - /tmp # mount tmpfs for temporary files (clarified)
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "5901"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      test: ["CMD", "nc", "-z", "localhost", "5901"] # check VNC port to verify service (clarified)
+      interval: 10s # run health check every ten seconds (clarified)
+      timeout: 5s # fail check after 5 seconds (clarified)
+      retries: 3 # unhealthy after three failures (clarified)
