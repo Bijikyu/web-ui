@@ -51,28 +51,21 @@ making reliability and performance critical considerations. Changes to this
 module require careful testing to prevent regression issues across the codebase.
 """
 
-import json
-import logging
-import os
-import time
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+import base64  # moved from below to consolidate imports & handle encoding
+import json  # consolidated json import for serialization tasks
+import logging  # keep logging for utility monitoring
+import os  # consolidated os import for file operations
+import time  # consolidated time import for timestamps
+import uuid  # moved up to single import block
+from pathlib import Path  # consolidated Path import for cross-platform paths
+from typing import Any, Dict, List, Optional, Union  # unified typing hints
+import requests  # moved from below to maintain single import section
+import gradio as gr  # moved from below for UI functionality
 
 # Module-level logger for utility function errors and performance monitoring
 # Utility functions are used throughout the application, so logging helps
 # identify which utilities are causing issues and track performance patterns
 logger = logging.getLogger(__name__)
-
-
-import base64
-import os
-import time
-from pathlib import Path
-from typing import Dict, Optional
-import requests
-import json
-import gradio as gr
-import uuid
 
 
 def ensure_dir(path: str):
