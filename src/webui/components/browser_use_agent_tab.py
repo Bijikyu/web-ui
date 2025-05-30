@@ -376,7 +376,7 @@ async def _ask_assistant_callback(
 
 async def run_agent_task(
     webui_manager: WebuiManager, components: Dict[gr.components.Component, Any]
-) -> AsyncGenerator[Dict[gr.components.Component, Any], None]:
+) -> AsyncGenerator[Dict[gr.components.Component, Any], None]:  # used as callback for Run button, yields UI updates
     """Handles the entire lifecycle of initializing and running the agent.
 
     This asynchronous generator function manages the complete execution cycle of the
@@ -560,12 +560,12 @@ async def run_agent_task(
     # Pass the webui_manager instance to the callback when wrapping it
     async def ask_callback_wrapper(
         query: str, browser_context: BrowserContext
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, Any]:  # thin wrapper to inject manager instance
         return await _ask_assistant_callback(webui_manager, query, browser_context)
 
     if not webui_manager.bu_controller:
         webui_manager.bu_controller = CustomController(
-            ask_assistant_callback=ask_callback_wrapper
+            ask_assistant_callback=ask_callback_wrapper  # controller uses wrapper for user prompts
         )
         await webui_manager.bu_controller.setup_mcp_client(mcp_server_config)
 

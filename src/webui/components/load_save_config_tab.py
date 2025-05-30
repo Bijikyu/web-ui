@@ -103,7 +103,7 @@ def create_load_save_config_tab(webui_manager: WebuiManager):
                 interactive=True
             )
         with gr.Column(scale=1):
-            with gr.Row():
+            with gr.Row():  # keep load/save buttons side by side for usability
                 load_config_button = gr.Button("Load Config", variant="primary")
                 save_config_button = gr.Button("Save UI Settings", variant="primary")
 
@@ -120,16 +120,16 @@ def create_load_save_config_tab(webui_manager: WebuiManager):
         config_file=config_file,
     ))
 
-    webui_manager.add_components("load_save_config", tab_components)
+    webui_manager.add_components("load_save_config", tab_components)  # register load/save widgets for persistence
 
     save_config_button.click(
-        fn=webui_manager.save_config,
+        fn=webui_manager.save_config,  # persist current settings to file
         inputs=set(webui_manager.get_components()),
         outputs=[config_status]
     )
 
     load_config_button.click(
-        fn=webui_manager.load_config,
+        fn=webui_manager.load_config,  # restore settings from selected file
         inputs=[config_file],
         outputs=webui_manager.get_components(),
     )

@@ -97,7 +97,7 @@ def create_agent_settings_tab(webui_manager: WebuiManager):
     input_components = set(webui_manager.get_components())
     tab_components = {}
 
-    with gr.Row():
+    with gr.Row():  # two columns to keep system prompt inputs aligned
         with gr.Column(scale=1):
             override_system_prompt = gr.Textbox(label="Override system prompt", lines=4, interactive=True)
         with gr.Column(scale=1):
@@ -299,36 +299,36 @@ def create_agent_settings_tab(webui_manager: WebuiManager):
         mcp_json_file=mcp_json_file,
         mcp_server_config=mcp_server_config,
     ))
-    webui_manager.add_components("agent_settings", tab_components)
+    webui_manager.add_components("agent_settings", tab_components)  # register for centralized state tracking
 
     llm_provider.change(
-        fn=lambda x: gr.update(visible=x == "ollama"),
+        fn=lambda x: gr.update(visible=x == "ollama"),  # show context field only when using Ollama
         inputs=llm_provider,
         outputs=ollama_num_ctx
     )
     llm_provider.change(
-        lambda provider: update_model_dropdown(provider),
+        lambda provider: update_model_dropdown(provider),  # populate model list when provider changes
         inputs=[llm_provider],
         outputs=[llm_model_name]
     )
     planner_llm_provider.change(
-        fn=lambda x: gr.update(visible=x == "ollama"),
+        fn=lambda x: gr.update(visible=x == "ollama"),  # planner context size only relevant for Ollama
         inputs=[planner_llm_provider],
         outputs=[planner_ollama_num_ctx]
     )
     planner_llm_provider.change(
-        lambda provider: update_model_dropdown(provider),
+        lambda provider: update_model_dropdown(provider),  # update planner model dropdown
         inputs=[planner_llm_provider],
         outputs=[planner_llm_model_name]
     )
 
     async def update_wrapper(mcp_file):
-        """Wrapper for handle_pause_resume."""
+        """Wrapper for handle_pause_resume."""  # retains async signature for event handler
         update_dict = await update_mcp_server(mcp_file, webui_manager)
         yield update_dict
 
     mcp_json_file.change(
-        update_wrapper,
+        update_wrapper,  # refresh textbox when user selects a new MCP file
         inputs=[mcp_json_file],
         outputs=[mcp_server_config, mcp_server_config]
     )
