@@ -41,6 +41,22 @@ class CustomController(Controller):
                  ask_assistant_callback: Optional[Union[Callable[[str, BrowserContext], Dict[str, Any]], Callable[
                      [str, BrowserContext], Awaitable[Dict[str, Any]]]]] = None,
                  ):
+        """Configure a CustomController instance.
+
+        Parameters
+        ----------
+        exclude_actions : list[str], optional
+            Actions that should not be registered when the controller starts.
+        output_model : Optional[Type[BaseModel]], optional
+            Pydantic model used to validate action outputs if provided.
+        ask_assistant_callback : Optional[Union[Callable, Awaitable]], optional
+            Function invoked when the agent needs human help. It can be
+            synchronous or asynchronous.
+
+        The constructor registers built-in actions immediately so the
+        controller can operate out of the box. It also prepares placeholders
+        for a future MCP client connection to enable remote tools.
+        """  # added constructor docstring explaining parameters and defaults
         super().__init__(exclude_actions=exclude_actions, output_model=output_model)  # setup base controller
         self._register_custom_actions()  # install built-in and custom actions
         self.ask_assistant_callback = ask_assistant_callback  # callback to query a human
@@ -173,5 +189,12 @@ class CustomController(Controller):
                     logger.info(f"Add mcp tool: {tool_name}")
 
     async def close_mcp_client(self):
+        """Close the MCP connection when shutting down.
+
+        Call this method before disposing of the controller so that
+        any open network resources held by the MCP client are released
+        cleanly. A graceful shutdown avoids leaving dangling sessions
+        on the remote server.
+        """  # added docstring for explaining graceful shutdown use
         if self.mcp_client:
             await self.mcp_client.__aexit__(None, None, None)  # graceful shutdown of MCP session
