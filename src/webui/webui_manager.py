@@ -1,5 +1,4 @@
 
-# ```python  #(convert stray markup to comment for valid syntax)
 """
 WebUI Manager - Central State and Component Management
 
@@ -531,4 +530,3 @@ class WebuiManager:
         
         # Yield the component updates for Gradio to apply
         yield update_components
-# ```  #(convert stray markup to comment for valid syntax)

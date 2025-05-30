@@ -876,4 +876,22 @@ async def synthesis_node(state: DeepResearchState) -> Dict[str, Any]:  #// compi
         **Collected Findings:**
         ```
         {formatted_results}
-        ```
+        ```  # end markdown block for results
+        """  # closes prompt string
+            ),  # closes human message tuple
+        ]  # closes messages list
+    )  # create ChatPromptTemplate
+    try:  # start llm invocation
+        ai_response: BaseMessage = await llm.ainvoke(  # get synthesis from llm
+            synthesis_prompt.format_prompt(  # fill template
+                topic=topic,  # provide topic
+                plan_summary=plan_summary,  # include plan summary
+                formatted_results=formatted_results,  # include gathered findings
+            ).to_messages()  # convert to messages
+        )  # invoke llm
+        report = ai_response.content  # capture report text
+        _save_report_to_md(report, output_dir)  # save report to file
+        return {"final_report": report}  # return final report
+    except Exception as e:  # catch invocation errors
+        logger.error(f"Error during synthesis: {e}", exc_info=True)  # log error details
+        return {"error_message": f"Synthesis failed: {e}"}  # return error message
