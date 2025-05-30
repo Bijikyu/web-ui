@@ -79,14 +79,18 @@ class FailClient(DummyClient):
         raise RuntimeError('fail')
 
 
-def test_setup_mcp_client_success(monkeypatch):  # client created and entered
+def test_setup_mcp_client_success(monkeypatch):
+    """Successful MCP client creation should enter context."""  #(added docstring summarizing test intent)
+    # client created and entered
     monkeypatch.setattr(mcp_client, 'MultiServerMCPClient', SuccessClient)
     client = asyncio.run(setup_mcp_client_and_tools({'a': 1}))
     assert isinstance(client, SuccessClient)
     assert client.entered
 
 
-def test_setup_mcp_client_failure(monkeypatch):  # failure returns None
+def test_setup_mcp_client_failure(monkeypatch):
+    """Return None when MCP client initialization fails."""  #(added docstring summarizing test intent)
+    # failure returns None
     monkeypatch.setattr(mcp_client, 'MultiServerMCPClient', FailClient)
     client = asyncio.run(setup_mcp_client_and_tools({'a': 1}))
     assert client is None
@@ -103,7 +107,9 @@ class FakeTool:
         'required': ['req_field']
     }
 
-def test_create_tool_param_model():  # build pydantic model from tool schema
+def test_create_tool_param_model():
+    """Build a Pydantic model from a tool schema."""  #(added docstring summarizing test intent)
+    # build pydantic model from tool schema
     model = create_tool_param_model(FakeTool)
     ann = model.__annotations__
     assert ann['req_field'] is str
@@ -113,7 +119,9 @@ def test_create_tool_param_model():  # build pydantic model from tool schema
     assert model.opt_enum == 'x'
 
 
-def test_resolve_type_enum_array():  # resolve enum and array JSON types
+def test_resolve_type_enum_array():
+    """Resolve enum and array types from JSON schema."""  #(added docstring summarizing test intent)
+    # resolve enum and array JSON types
     enum_type = resolve_type({'type': 'string', 'enum': ['a', 'b']}, 'test')
     array_type = resolve_type({'type': 'array', 'items': {'type': 'integer'}}, 'nums')
     assert issubclass(enum_type, Enum)

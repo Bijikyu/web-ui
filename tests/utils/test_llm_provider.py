@@ -71,13 +71,17 @@ stub_module('langchain_core.tools', {'BaseTool': Dummy})  # (fake tools)
 llm_provider = importlib.import_module('src.utils.llm_provider')  # (import target module)
 
 
-def test_openai_requires_key(monkeypatch):  # missing API key raises error
+def test_openai_requires_key(monkeypatch):
+    """Ensure an API key is required for OpenAI provider."""  #(added docstring summarizing test intent)
+    # missing API key raises error
     monkeypatch.delenv('OPENAI_API_KEY', raising=False)  # (clear env var)
     with pytest.raises(ValueError):  # (expect error)
         llm_provider.get_llm_model('openai')  # (call provider)
 
 
-def test_openai_custom_params(monkeypatch):  # custom params override defaults
+def test_openai_custom_params(monkeypatch):
+    """Custom parameters should override OpenAI defaults."""  #(added docstring summarizing test intent)
+    # custom params override defaults
     monkeypatch.setenv('OPENAI_API_KEY', 'sk-test')  # (set env var)
     model = llm_provider.get_llm_model(
         'openai', base_url='http://api', temperature=0.5
@@ -87,7 +91,9 @@ def test_openai_custom_params(monkeypatch):  # custom params override defaults
     assert model.kwargs['temperature'] == 0.5  # (verify temperature)
 
 
-def test_ollama_custom_params(monkeypatch):  # ollama provider honors overrides
+def test_ollama_custom_params(monkeypatch):
+    """Ollama provider should honor provided override parameters."""  #(added docstring summarizing test intent)
+    # ollama provider honors overrides
     monkeypatch.delenv('OLLAMA_ENDPOINT', raising=False)  # (clear env var)
     model = llm_provider.get_llm_model(
         'ollama', base_url='http://ollama', temperature=0.1
@@ -97,13 +103,17 @@ def test_ollama_custom_params(monkeypatch):  # ollama provider honors overrides
     assert model.kwargs['temperature'] == 0.1  # (verify temperature)
 
 
-def test_anthropic_requires_key(monkeypatch):  # anthropic needs API key
+def test_anthropic_requires_key(monkeypatch):
+    """Anthropic provider should raise when API key missing."""  #(added docstring summarizing test intent)
+    # anthropic needs API key
     monkeypatch.delenv('ANTHROPIC_API_KEY', raising=False)  #(description of change & current functionality)
     with pytest.raises(ValueError):  #(description of change & current functionality)
         llm_provider.get_llm_model('anthropic')  #(description of change & current functionality)
 
 
-def test_anthropic_custom_params(monkeypatch):  # anthropic with overrides works
+def test_anthropic_custom_params(monkeypatch):
+    """Anthropic provider should accept and use custom parameters."""  #(added docstring summarizing test intent)
+    # anthropic with overrides works
     monkeypatch.setenv('ANTHROPIC_API_KEY', 'ant-test')  #(description of change & current functionality)
     model = llm_provider.get_llm_model(  #(description of change & current functionality)
         'anthropic', base_url='https://anthropic', temperature=0.2  #(description of change & current functionality)
@@ -113,7 +123,9 @@ def test_anthropic_custom_params(monkeypatch):  # anthropic with overrides works
     assert model.kwargs['temperature'] == 0.2  #(description of change & current functionality)
 
 
-def test_ollama_no_key(monkeypatch):  # ollama works without explicit key
+def test_ollama_no_key(monkeypatch):
+    """Ollama provider works without an explicit API key."""  #(added docstring summarizing test intent)
+    # ollama works without explicit key
     monkeypatch.delenv('OLLAMA_ENDPOINT', raising=False)  #(description of change & current functionality)
     model = llm_provider.get_llm_model('ollama')  #(description of change & current functionality)
     assert isinstance(model, llm_provider.ChatOllama)  #(description of change & current functionality)

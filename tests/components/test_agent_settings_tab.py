@@ -109,7 +109,9 @@ class DummyManager:
         self.bu_controller = controller
 
 
-def test_update_model_dropdown_known(monkeypatch):  # provider known -> dropdown populated
+def test_update_model_dropdown_known(monkeypatch):
+    """Selecting a known provider populates the model dropdown."""  #(added docstring summarizing test intent)
+    # provider known -> dropdown populated
     mod = load_agent_settings_tab(monkeypatch)
     dd = mod.update_model_dropdown('openai')
     assert dd.choices == mod.config.model_names['openai']
@@ -117,7 +119,9 @@ def test_update_model_dropdown_known(monkeypatch):  # provider known -> dropdown
     assert dd.interactive
 
 
-def test_update_model_dropdown_unknown(monkeypatch):  # unknown provider -> empty dropdown
+def test_update_model_dropdown_unknown(monkeypatch):
+    """Unknown provider yields an empty, customisable dropdown."""  #(added docstring summarizing test intent)
+    # unknown provider -> empty dropdown
     mod = load_agent_settings_tab(monkeypatch)
     dd = mod.update_model_dropdown('foo')
     assert dd.choices == []
@@ -125,14 +129,18 @@ def test_update_model_dropdown_unknown(monkeypatch):  # unknown provider -> empt
     assert dd.allow_custom_value
 
 
-def test_update_mcp_server_invalid(monkeypatch, tmp_path):  # invalid path hides config
+def test_update_mcp_server_invalid(monkeypatch, tmp_path):
+    """Hide MCP config UI when file does not exist."""  #(added docstring summarizing test intent)
+    # invalid path hides config
     mod = load_agent_settings_tab(monkeypatch)
     mgr = DummyManager()
     result = asyncio.run(mod.update_mcp_server(str(tmp_path / 'no.json'), mgr))
     assert result == (None, mod.gr.update(visible=False))
 
 
-def test_update_mcp_server_valid(monkeypatch, tmp_path):  # valid path loads config JSON
+def test_update_mcp_server_valid(monkeypatch, tmp_path):
+    """Load MCP server configuration from JSON file."""  #(added docstring summarizing test intent)
+    # valid path loads config JSON
     mod = load_agent_settings_tab(monkeypatch)
     data = {'a': 1}
     json_file = tmp_path / 'cfg.json'

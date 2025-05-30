@@ -85,7 +85,9 @@ def make_config(**kwargs):
     base.update(kwargs)
     return SimpleNamespace(**base)
 
-def test_reuse_existing_context(monkeypatch):  # second call reuses first context
+def test_reuse_existing_context(monkeypatch):
+    """Second call should reuse the first Playwright context."""  #(added docstring summarizing test intent)
+    # second call reuses first context
     pw_browser = DummyPWBrowser()  # stub PlaywrightBrowser
     browser_config = SimpleNamespace(cdp_url="ws://x", browser_binary_path=None)  # config for reuse
     browser = BrowserBase(browser_config)  # create browser
@@ -98,7 +100,9 @@ def test_reuse_existing_context(monkeypatch):  # second call reuses first contex
     assert ctx2 is ctx1  # same context reused
     assert not pw_browser.new_called  # no new context created
 
-def test_load_cookies_and_scripts(tmp_path):  # cookies loaded and script injected
+def test_load_cookies_and_scripts(tmp_path):
+    """Load cookie file and inject navigator override script."""  #(added docstring summarizing test intent)
+    # cookies loaded and script injected
     cookie_file = tmp_path / "c.json"  # path for cookie file
     with open(cookie_file, "w") as f:
         json.dump([{"name": "a", "value": "1", "sameSite": "Bad"}], f)  # write cookie
@@ -111,7 +115,9 @@ def test_load_cookies_and_scripts(tmp_path):  # cookies loaded and script inject
     assert ctx.added_cookies == [{"name": "a", "value": "1", "sameSite": "None"}]  # cookie fixed
     assert any("navigator" in s for s in ctx.init_scripts)  # script injected
 
-def test_malformed_cookies_file(monkeypatch):  # malformed cookie file logs error
+def test_malformed_cookies_file(monkeypatch):
+    """Gracefully log errors for malformed cookie files."""  #(added docstring summarizing test intent)
+    # malformed cookie file logs error
     pw_browser = DummyPWBrowser()  # stub PlaywrightBrowser
     browser = BrowserBase(SimpleNamespace(cdp_url=None, browser_binary_path=None))  # browser without reuse condition
     cfg = make_config(cookies_file="bad.json")  # config with bad cookie file

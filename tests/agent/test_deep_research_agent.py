@@ -80,7 +80,9 @@ def setup_stubs():
 setup_stubs()
 from src.agent.deep_research import deep_research_agent as dr
 
-def test_run_browser_search_tool(monkeypatch):  # run tasks in parallel browsers
+def test_run_browser_search_tool(monkeypatch):
+    """Run search queries across parallel browsers and collect results."""  #(added docstring summarizing test intent)
+    # run tasks in parallel browsers
     async def fake_task(query, task_id, llm, browser_config, stop_event):
         return {'query': query, 'result': f'result_{query}', 'status': 'completed'}
     monkeypatch.setattr(dr, 'run_single_browser_task', fake_task)
@@ -91,7 +93,9 @@ def test_run_browser_search_tool(monkeypatch):  # run tasks in parallel browsers
         {'query': 'q2', 'result': 'result_q2', 'status': 'completed'},
     ]
 
-def test_run_browser_search_tool_cancel(monkeypatch):  # cancellation yields cancelled status
+def test_run_browser_search_tool_cancel(monkeypatch):
+    """Cancellation event short-circuits browser search tool."""  #(added docstring summarizing test intent)
+    # cancellation yields cancelled status
     called = False
     async def fake_task(*a, **k):
         nonlocal called
@@ -103,7 +107,9 @@ def test_run_browser_search_tool_cancel(monkeypatch):  # cancellation yields can
     assert not called
     assert res == [{'query': 'q1', 'result': None, 'status': 'cancelled'}]
 
-def test_create_browser_search_tool(monkeypatch):  # create StructuredTool wrapper
+def test_create_browser_search_tool(monkeypatch):
+    """Build a StructuredTool wrapper around the search runner."""  #(added docstring summarizing test intent)
+    # create StructuredTool wrapper
     async def fake_runner(queries, task_id, llm, browser_config, stop_event, max_parallel_browsers=1):
         return ['ok', queries, task_id, llm, browser_config, stop_event, max_parallel_browsers]
     monkeypatch.setattr(dr, '_run_browser_search_tool', fake_runner)
@@ -120,7 +126,9 @@ def test_create_browser_search_tool(monkeypatch):  # create StructuredTool wrapp
     assert result[6] == 3
 
 
-def test_load_previous_state(tmp_path):  # load saved state from files
+def test_load_previous_state(tmp_path):
+    """Read research plan and search results from disk."""  #(added docstring summarizing test intent)
+    # load saved state from files
     plan = tmp_path / dr.PLAN_FILENAME
     plan.write_text('- [x] done\n- [ ] todo\n')
     search = tmp_path / dr.SEARCH_INFO_FILENAME
@@ -132,13 +140,17 @@ def test_load_previous_state(tmp_path):  # load saved state from files
     assert len(state['research_plan']) == 2
 
 
-def test_save_report_to_md(tmp_path):  # write markdown report file
+def test_save_report_to_md(tmp_path):
+    """Persist markdown report to disk."""  #(added docstring summarizing test intent)
+    # write markdown report file
     dr._save_report_to_md('hello', tmp_path)
     report = tmp_path / dr.REPORT_FILENAME
     assert report.read_text() == 'hello'
 
 
-def test_load_previous_state_invalid(tmp_path):  # gracefully handle bad state files
+def test_load_previous_state_invalid(tmp_path):
+    """Gracefully handle malformed saved state files."""  #(added docstring summarizing test intent)
+    # gracefully handle bad state files
     (tmp_path / dr.PLAN_FILENAME).write_text('- [ ] task\n')  # // create plan file for loading
     (tmp_path / dr.SEARCH_INFO_FILENAME).write_text('{bad')  # // invalid json should trigger error
     state = dr._load_previous_state('tid', str(tmp_path))
@@ -146,7 +158,9 @@ def test_load_previous_state_invalid(tmp_path):  # gracefully handle bad state f
     assert 'error_message' in state and 'Failed to load search results' in state['error_message']  # // error message surfaced
 
 
-def test_save_plan_and_search_files(tmp_path):  # persist plan and search data
+def test_save_plan_and_search_files(tmp_path):
+    """Write research plan markdown and search results JSON."""  #(added docstring summarizing test intent)
+    # persist plan and search data
     plan = [
         {'step': 1, 'task': 'a', 'status': 'pending', 'queries': None, 'result_summary': None},
         {'step': 2, 'task': 'b', 'status': 'completed', 'queries': None, 'result_summary': None},
@@ -161,7 +175,9 @@ def test_save_plan_and_search_files(tmp_path):  # persist plan and search data
     assert saved == results  # // json saved correctly
 
 
-def test_setup_tools(monkeypatch):  # default tool set without MCP
+def test_setup_tools(monkeypatch):
+    """Create default tool set when MCP not configured."""  #(added docstring summarizing test intent)
+    # default tool set without MCP
     monkeypatch.setattr(dr.DeepResearchAgent, '_compile_graph', lambda self: None)  # // avoid constructing StateGraph
     agent = dr.DeepResearchAgent('llm', {'b': True})
     monkeypatch.setattr(dr, 'create_browser_search_tool', lambda *a, **k: types.SimpleNamespace(name='browser'))  # // replace browser tool factory
@@ -170,7 +186,9 @@ def test_setup_tools(monkeypatch):  # default tool set without MCP
     assert names == {'WriteFileTool', 'ReadFileTool', 'ListDirectoryTool', 'browser'}  # // default tools built
 
 
-def test_setup_tools_with_mcp(monkeypatch):  # include tools from MCP client
+def test_setup_tools_with_mcp(monkeypatch):
+    """Include MCP client tools when configuration provided."""  #(added docstring summarizing test intent)
+    # include tools from MCP client
     class DummyClient:
         def get_tools(self):
             return [types.SimpleNamespace(name='mcp')]
