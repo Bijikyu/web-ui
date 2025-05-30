@@ -95,7 +95,7 @@ def create_browser_settings_tab(webui_manager: WebuiManager):
     input_components = set(webui_manager.get_components())
     tab_components = {}
 
-    with gr.Group():
+    with gr.Group():  # group path settings separately for clarity
         with gr.Row():
             browser_binary_path = gr.Textbox(
                 label="Browser Binary Path",
@@ -207,13 +207,13 @@ def create_browser_settings_tab(webui_manager: WebuiManager):
             window_w=window_w,
         )
     )
-    webui_manager.add_components("browser_settings", tab_components)
+    webui_manager.add_components("browser_settings", tab_components)  # register for persistence and callbacks
 
     async def close_wrapper():
-        """Wrapper for handle_clear."""
+        """Wrapper for handle_clear."""  # called when toggles affecting browser are changed
         await close_browser(webui_manager)
 
-    headless.change(close_wrapper)
-    keep_browser_open.change(close_wrapper)
-    disable_security.change(close_wrapper)
-    use_own_browser.change(close_wrapper)
+    headless.change(close_wrapper)  # closing browser ensures new setting takes effect
+    keep_browser_open.change(close_wrapper)  # allow toggling without stale instance
+    disable_security.change(close_wrapper)  # update security flags immediately
+    use_own_browser.change(close_wrapper)  # handle switching between local/managed browser

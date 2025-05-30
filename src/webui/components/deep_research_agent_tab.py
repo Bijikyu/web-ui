@@ -354,7 +354,7 @@ def create_deep_research_agent_tab(webui_manager: WebuiManager):
     input_components = set(webui_manager.get_components())
     tab_components = {}
 
-    with gr.Group():
+    with gr.Group():  # file selection separate from rest of form
         with gr.Row():
             mcp_json_file = gr.File(label="MCP server json", interactive=True, file_types=[".json"])
             mcp_server_config = gr.Textbox(label="MCP server", lines=6, interactive=True, visible=False)
@@ -392,16 +392,16 @@ def create_deep_research_agent_tab(webui_manager: WebuiManager):
             mcp_server_config=mcp_server_config,
         )
     )
-    webui_manager.add_components("deep_research_agent", tab_components)
+    webui_manager.add_components("deep_research_agent", tab_components)  # register components for manager lookups
     webui_manager.init_deep_research_agent()
 
     async def update_wrapper(mcp_file):
-        """Wrapper for handle_pause_resume."""
+        """Wrapper for handle_pause_resume."""  # processes MCP file selection
         update_dict = await update_mcp_server(mcp_file, webui_manager)
         yield update_dict
 
     mcp_json_file.change(
-        update_wrapper,
+        update_wrapper,  # refresh server config textbox
         inputs=[mcp_json_file],
         outputs=[mcp_server_config, mcp_server_config]
     )
@@ -410,23 +410,23 @@ def create_deep_research_agent_tab(webui_manager: WebuiManager):
     all_managed_inputs = set(webui_manager.get_components())
 
     # --- Define Event Handler Wrappers ---
-    async def start_wrapper(comps: Dict[Component, Any]) -> AsyncGenerator[Dict[Component, Any], None]:
+    async def start_wrapper(comps: Dict[Component, Any]) -> AsyncGenerator[Dict[Component, Any], None]:  # relay start button event
         async for update in run_deep_research(webui_manager, comps):
             yield update
 
-    async def stop_wrapper() -> AsyncGenerator[Dict[Component, Any], None]:
+    async def stop_wrapper() -> AsyncGenerator[Dict[Component, Any], None]:  # relay stop button event
         update_dict = await stop_deep_research(webui_manager)
         yield update_dict
 
     # --- Connect Handlers ---
     start_button.click(
-        fn=start_wrapper,
+        fn=start_wrapper,  # start research with current UI values
         inputs=all_managed_inputs,
         outputs=dr_tab_outputs
     )
 
     stop_button.click(
-        fn=stop_wrapper,
+        fn=stop_wrapper,  # stop ongoing research task
         inputs=None,
         outputs=dr_tab_outputs
     )

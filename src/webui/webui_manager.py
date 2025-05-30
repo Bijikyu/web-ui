@@ -1,5 +1,5 @@
 
-```python
+# ```python  #(convert stray markup to comment for valid syntax)
 """
 WebUI Manager - Central State and Component Management
 
@@ -226,8 +226,8 @@ class WebuiManager:
             comp_id = f"{tab_name}.{comp_name}"
             
             # Establish bidirectional mapping for efficient access
-            self.id_to_component[comp_id] = component
-            self.component_to_id[component] = comp_id
+            self.id_to_component[comp_id] = component  # map ID to component for later lookup
+            self.component_to_id[component] = comp_id  # reverse map for event handling
 
     def get_components(self) -> list["Component"]:
         """
@@ -433,7 +433,7 @@ class WebuiManager:
         - Directory guarantee: ensure_dir() in __init__ prevents save failures
         """
         # Dictionary to store component states that should be persisted
-        cur_settings = {}
+        cur_settings = {}  # store user-provided values for JSON persistence
         
         for comp in components:
             # Filter out components that shouldn't be saved
@@ -506,7 +506,7 @@ class WebuiManager:
             ui_settings = json.load(fr)
 
         # Dictionary to accumulate component updates for Gradio
-        update_components = {}
+        update_components = {}  # collect per-component updates to return to Gradio
         
         # Process each saved component setting
         for comp_id, comp_val in ui_settings.items():
@@ -531,4 +531,4 @@ class WebuiManager:
         
         # Yield the component updates for Gradio to apply
         yield update_components
-```
+# ```  #(convert stray markup to comment for valid syntax)
