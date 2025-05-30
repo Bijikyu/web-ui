@@ -200,9 +200,9 @@ def create_agent_settings_tab(webui_manager: WebuiManager):
             )
 
             # Ollama-specific context length configuration
-    # Context length directly impacts memory usage and processing speed
-    # Powers of 2 are used because they align with model architecture and tokenization
-    planner_ollama_num_ctx = gr.Slider(
+            # Context length directly impacts memory usage and processing speed
+            # Powers of 2 are used because they align with model architecture and tokenization
+            planner_ollama_num_ctx = gr.Slider(
                 minimum=2 ** 8,    # 256 tokens - minimal context for simple tasks
                 maximum=2 ** 16,   # 65536 tokens - very large context for complex reasoning
                 value=16000,       # Balanced default - good for most research tasks
@@ -235,46 +235,46 @@ def create_agent_settings_tab(webui_manager: WebuiManager):
 
     # Agent execution limits section
     # These controls prevent runaway processes and manage resource consumption
-    with gr.Row():
-        # Maximum workflow steps - prevents infinite loops and runaway costs
-        # Range: 1-1000 provides flexibility while preventing excessive resource use
-        max_steps = gr.Slider(
-            minimum=1,         # At least one step required for any meaningful work
-            maximum=1000,      # Upper limit prevents runaway processes
-            value=100,         # Default suitable for most complex research tasks
-            step=1,
-            label="Max Run Steps",
-            info="Maximum number of steps the agent will take",
-            interactive=True
-        )
+        with gr.Row():
+            # Maximum workflow steps - prevents infinite loops and runaway costs
+            # Range: 1-1000 provides flexibility while preventing excessive resource use
+            max_steps = gr.Slider(
+                minimum=1,         # At least one step required for any meaningful work
+                maximum=1000,      # Upper limit prevents runaway processes
+                value=100,         # Default suitable for most complex research tasks
+                step=1,
+                label="Max Run Steps",
+                info="Maximum number of steps the agent will take",
+                interactive=True
+            )
+    
+            # Actions per step limit - controls granularity and prevents blocking
+            # Smaller values = more frequent checkpoints, larger values = fewer interruptions
+            max_actions = gr.Slider(
+                minimum=1,         # Minimum one action per step for progress
+                maximum=100,       # Upper bound prevents excessively long steps
+                value=10,          # Balanced default - allows meaningful progress per step
+                step=1,
+                label="Max Number of Actions",
+                info="Maximum number of actions the agent will take per step",
+                interactive=True
+            )
 
-        # Actions per step limit - controls granularity and prevents blocking
-        # Smaller values = more frequent checkpoints, larger values = fewer interruptions
-        max_actions = gr.Slider(
-            minimum=1,         # Minimum one action per step for progress
-            maximum=100,       # Upper bound prevents excessively long steps
-            value=10,          # Balanced default - allows meaningful progress per step
-            step=1,
-            label="Max Number of Actions",
-            info="Maximum number of actions the agent will take per step",
-            interactive=True
-        )
-
-    with gr.Row():
-        max_input_tokens = gr.Number(
-            label="Max Input Tokens",
-            value=128000,
-            precision=0,
-            interactive=True
-        )
-        tool_calling_method = gr.Dropdown(
-            label="Tool Calling Method",
-            value="auto",
-            interactive=True,
-            allow_custom_value=True,
-            choices=["auto", "json_schema", "function_calling", "None"],
-            visible=True
-        )
+        with gr.Row():
+            max_input_tokens = gr.Number(
+                label="Max Input Tokens",
+                value=128000,
+                precision=0,
+                interactive=True
+            )
+            tool_calling_method = gr.Dropdown(
+                label="Tool Calling Method",
+                value="auto",
+                interactive=True,
+                allow_custom_value=True,
+                choices=["auto", "json_schema", "function_calling", "None"],
+                visible=True
+            )
     tab_components.update(dict(
         override_system_prompt=override_system_prompt,
         extend_system_prompt=extend_system_prompt,
