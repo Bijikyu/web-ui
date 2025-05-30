@@ -29,6 +29,7 @@ The agent operates through distinct phases:
 This architecture enables handling research tasks that may take hours to complete
 while providing progress visibility and the ability to resume interrupted work.
 """
+# The workflow flows through planning -> execution -> synthesis  #// clarifies overall flow
 
 import asyncio
 import json
@@ -92,10 +93,7 @@ async def run_single_browser_task(
     stop_event: threading.Event,
     use_vision: bool = False,
 ) -> Dict[str, Any]:
-    """
-    Runs a single BrowserUseAgent task.
-    Manages browser creation and closing for this specific task.
-    """
+    """Launch a headless browser session for one search query."""  #// clarifies role
     if not BrowserUseAgent:
         return {
             "query": task_query,
@@ -186,16 +184,16 @@ async def run_single_browser_task(
 
         if stop_event.is_set():
             logger.info(f"Browser task for '{task_query}' stopped during execution.")
-            return {"query": task_query, "result": final_data, "status": "stopped"}
+            return {"query": task_query, "result": final_data, "status": "stopped"}  #// early termination info
         else:
             logger.info(f"Browser result for '{task_query}': {final_data}")
-            return {"query": task_query, "result": final_data, "status": "completed"}
+            return {"query": task_query, "result": final_data, "status": "completed"}  #// success result for caller
 
     except Exception as e:
         logger.error(
             f"Error during browser task for query '{task_query}': {e}", exc_info=True
         )
-        return {"query": task_query, "error": str(e), "status": "failed"}
+        return {"query": task_query, "error": str(e), "status": "failed"}  #// communicates error back
     finally:
         await close_browser_resources(  # close resources via util
             bu_browser,
@@ -220,10 +218,7 @@ async def _run_browser_search_tool(
     stop_event: threading.Event,
     max_parallel_browsers: int = 1,
 ) -> List[Dict[str, Any]]:
-    """
-    Internal function to execute parallel browser searches based on LLM-provided queries.
-    Handles concurrency and stop signals.
-    """
+    """Run multiple browser tasks concurrently and return their results."""  #// describes concurrency strategy
 
     # Limit queries just in case LLM ignores the description
     queries = queries[:max_parallel_browsers]
@@ -231,7 +226,7 @@ async def _run_browser_search_tool(
         f"[Browser Tool {task_id}] Running search for {len(queries)} queries: {queries}"
     )
 
-    results = []
+    results = []  #// holds individual query results
     semaphore = asyncio.Semaphore(max_parallel_browsers)
 
     async def task_wrapper(query):
@@ -251,10 +246,10 @@ async def _run_browser_search_tool(
                 # use_vision could be added here if needed
             )
 
-    tasks = [task_wrapper(query) for query in queries]
-    search_results = await asyncio.gather(*tasks, return_exceptions=True)
+    tasks = [task_wrapper(query) for query in queries]  #// launch concurrent tasks
+    search_results = await asyncio.gather(*tasks, return_exceptions=True)  #// wait for all searches
 
-    processed_results = []
+    processed_results = []  #// normalized list of tool outputs
     for i, res in enumerate(search_results):
         query = queries[i]  # Get corresponding query
         if isinstance(res, Exception):
@@ -278,7 +273,7 @@ async def _run_browser_search_tool(
     logger.info(
         f"[Browser Tool {task_id}] Finished search. Results count: {len(processed_results)}"
     )
-    return processed_results
+    return processed_results  #// send results back to execution node
 
 
 def create_browser_search_tool(
@@ -288,7 +283,7 @@ def create_browser_search_tool(
     stop_event: threading.Event,
     max_parallel_browsers: int = 1,
 ) -> StructuredTool:
-    """Factory function to create the browser search tool with necessary dependencies."""
+    """Return a StructuredTool wired with config and stop controls."""  #// explains binding
     # Use partial to bind the dependencies that aren't part of the LLM call arguments
     from functools import partial
 
@@ -299,9 +294,9 @@ def create_browser_search_tool(
         browser_config=browser_config,
         stop_event=stop_event,
         max_parallel_browsers=max_parallel_browsers,
-    )
+    )  #// partial binds runtime dependencies
 
-    return StructuredTool.from_function(
+    return StructuredTool.from_function(  #// yields tool usable by LLM
         coroutine=bound_tool_func,
         name="parallel_browser_search",
         description=f"""Use this tool to actively search the web for information related to a specific research task or question.
@@ -344,7 +339,7 @@ class DeepResearchState(TypedDict):
 # --- Langgraph Nodes ---
 
 
-def _load_previous_state(task_id: str, output_dir: str) -> Dict[str, Any]:
+def _load_previous_state(task_id: str, output_dir: str) -> Dict[str, Any]:  #// restores workflow from disk
     """Loads state from files if they exist."""
     state_updates = {}
     plan_file = os.path.join(output_dir, PLAN_FILENAME)
@@ -396,7 +391,7 @@ def _load_previous_state(task_id: str, output_dir: str) -> Dict[str, Any]:
     return state_updates
 
 
-def _save_plan_to_md(plan: List[ResearchPlanItem], output_dir: str):
+def _save_plan_to_md(plan: List[ResearchPlanItem], output_dir: str):  #// persists plan steps
     """Saves the research plan to a markdown checklist file."""
     plan_file = os.path.join(output_dir, PLAN_FILENAME)
     try:
@@ -410,7 +405,7 @@ def _save_plan_to_md(plan: List[ResearchPlanItem], output_dir: str):
         logger.error(f"Failed to save research plan to {plan_file}: {e}")
 
 
-def _save_search_results_to_json(results: List[Dict[str, Any]], output_dir: str):
+def _save_search_results_to_json(results: List[Dict[str, Any]], output_dir: str):  #// stores gathered data
     """Appends or overwrites search results to a JSON file."""
     search_file = os.path.join(output_dir, SEARCH_INFO_FILENAME)
     try:
@@ -422,7 +417,7 @@ def _save_search_results_to_json(results: List[Dict[str, Any]], output_dir: str)
         logger.error(f"Failed to save search results to {search_file}: {e}")
 
 
-def _save_report_to_md(report: str, output_dir: Path):
+def _save_report_to_md(report: str, output_dir: Path):  #// persists final synthesis
     """
     Saves the final research report to a markdown file in the specified output directory.
 
@@ -457,7 +452,7 @@ def _save_report_to_md(report: str, output_dir: Path):
         logger.error(f"Failed to save final report to {report_file}: {e}")
 
 
-async def planning_node(state: DeepResearchState) -> Dict[str, Any]:
+async def planning_node(state: DeepResearchState) -> Dict[str, Any]:  #// builds or reloads plan
     """
     Core planning node for the deep research agent workflow.
 
@@ -589,7 +584,7 @@ async def planning_node(state: DeepResearchState) -> Dict[str, Any]:
         return {"error_message": f"LLM Error during planning: {e}"}
 
 
-async def research_execution_node(state: DeepResearchState) -> Dict[str, Any]:
+async def research_execution_node(state: DeepResearchState) -> Dict[str, Any]:  #// drives each research step
     """
     Executes the next step in the research plan by invoking the LLM with tools.
     The LLM decides which tool (e.g., browser search) to use and provides arguments.
@@ -797,7 +792,7 @@ async def research_execution_node(state: DeepResearchState) -> Dict[str, Any]:
         }
 
 
-async def synthesis_node(state: DeepResearchState) -> Dict[str, Any]:
+async def synthesis_node(state: DeepResearchState) -> Dict[str, Any]:  #// compiles final report
     """Synthesizes the final report from the collected search results."""
     logger.info("--- Entering Synthesis Node ---")
     if state.get("stop_requested"):
