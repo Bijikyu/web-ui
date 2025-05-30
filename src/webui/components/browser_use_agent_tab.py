@@ -639,4 +639,9 @@ async def run_agent_task(
         gif_path = os.path.join(
             save_agent_history_path,
             webui_manager.bu_agent_task_id,
-            f"{webui_manager.bu_agent_task_id}.gif",\n{type(e).__name__}: {e}\n
+            f"{webui_manager.bu_agent_task_id}.gif",
+        )  # // path for generated GIF
+
+    except Exception as e:  # // capture any setup errors
+        logger.error(f"run_agent_task encountered error: {e}", exc_info=True)
+        return
