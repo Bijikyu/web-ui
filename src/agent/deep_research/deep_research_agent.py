@@ -877,3 +877,354 @@ async def synthesis_node(state: DeepResearchState) -> Dict[str, Any]:  #// compi
         ```
         {formatted_results}
         ```
+
+        ```
+
+        Please generate the final research report in Markdown format based **only** on the information above. Ensure all claims derived from the findings are properly cited using the format [Reference_ID].
+        """,
+            ),
+        ]
+    )
+
+    try:
+        response = await llm.ainvoke(
+            synthesis_prompt.format_prompt(
+                topic=topic,
+                plan_summary=plan_summary,
+                formatted_results=formatted_results,
+                references=references,
+            ).to_messages(),
+        )
+        final_report_md = response.content
+
+        # Append the reference list automatically to the end of the generated markdown
+        if references:
+            report_references_section = "\n\n## References\n\n"
+            # Sort refs by ID for consistent output
+            sorted_refs = sorted(references.values(), key=lambda x: x["id"])
+            for ref in sorted_refs:
+                report_references_section += (
+                    f"[{ref['id']}] {ref['title']} - {ref['url']}\n"
+                )
+            final_report_md += report_references_section
+
+        logger.info("Successfully synthesized the final report.")
+        _save_report_to_md(final_report_md, output_dir)
+        return {"final_report": final_report_md}
+
+    except Exception as e:
+        logger.error(f"Error during report synthesis: {e}", exc_info=True)
+        return {"error_message": f"LLM Error during synthesis: {e}"}
+
+
+# --- Langgraph Edges and Conditional Logic ---
+
+
+def should_continue(state: DeepResearchState) -> str:
+    """Determines the next step based on the current state."""
+    logger.info("--- Evaluating Condition: Should Continue? ---")
+    if state.get("stop_requested"):
+        logger.info("Stop requested, routing to END.")
+        return "end_run"  # Go to a dedicated end node for cleanup if needed
+    if state.get("error_message"):
+        logger.warning(f"Error detected: {state['error_message']}. Routing to END.")
+        # Decide if errors should halt execution or if it should try to synthesize anyway
+        return "end_run"  # Stop on error for now
+
+    plan = state.get("research_plan")
+    current_index = state.get("current_step_index", 0)
+
+    if not plan:
+        logger.warning(
+            "No research plan found, cannot continue execution. Routing to END."
+        )
+        return "end_run"  # Should not happen if planning node ran correctly
+
+    # Check if there are pending steps in the plan
+    if current_index < len(plan):
+        logger.info(
+            f"Plan has pending steps (current index {current_index}/{len(plan)}). Routing to Research Execution."
+        )
+        return "execute_research"
+    else:
+        logger.info("All plan steps processed. Routing to Synthesis.")
+        return "synthesize_report"
+
+
+# --- DeepSearchAgent Class ---
+
+
+class DeepResearchAgent:
+    def __init__(
+        self,
+        llm: Any,
+        browser_config: Dict[str, Any],
+        mcp_server_config: Optional[Dict[str, Any]] = None,
+    ):
+        """
+        Initializes the DeepSearchAgent.
+
+        Args:
+            llm: The Langchain compatible language model instance.
+            browser_config: Configuration dictionary for the BrowserUseAgent tool.
+                            Example: {"headless": True, "window_width": 1280, ...}
+            mcp_server_config: Optional configuration for the MCP client.
+        """
+        self.llm = llm
+        self.browser_config = browser_config
+        self.mcp_server_config = mcp_server_config
+        self.mcp_client = None
+        self.stopped = False
+        self.graph = self._compile_graph()
+        self.current_task_id: Optional[str] = None
+        self.stop_event: Optional[threading.Event] = None
+        self.runner: Optional[asyncio.Task] = None  # To hold the asyncio task for run
+
+    async def _setup_tools(
+        self, task_id: str, stop_event: threading.Event, max_parallel_browsers: int = 1
+    ) -> List[Tool]:
+        """Sets up the basic tools (File I/O) and optional MCP tools."""
+        tools = [
+            WriteFileTool(),
+            ReadFileTool(),
+            ListDirectoryTool(),
+        ]  # Basic file operations
+        browser_use_tool = create_browser_search_tool(
+            llm=self.llm,
+            browser_config=self.browser_config,
+            task_id=task_id,
+            stop_event=stop_event,
+            max_parallel_browsers=max_parallel_browsers,
+        )
+        tools += [browser_use_tool]
+        # Add MCP tools if config is provided
+        if self.mcp_server_config:
+            try:
+                logger.info("Setting up MCP client and tools...")
+                if not self.mcp_client:
+                    self.mcp_client = await setup_mcp_client_and_tools(
+                        self.mcp_server_config
+                    )
+                mcp_tools = self.mcp_client.get_tools()
+                logger.info(f"Loaded {len(mcp_tools)} MCP tools.")
+                tools.extend(mcp_tools)
+            except Exception as e:
+                logger.error(f"Failed to set up MCP tools: {e}", exc_info=True)
+        elif self.mcp_server_config:
+            logger.warning(
+                "MCP server config provided, but setup function unavailable."
+            )
+        tools_map = {tool.name: tool for tool in tools}
+        return tools_map.values()
+
+    async def close_mcp_client(self):
+        if self.mcp_client:
+            await self.mcp_client.__aexit__(None, None, None)
+            self.mcp_client = None
+
+    def _compile_graph(self) -> StateGraph:
+        """Compiles the Langgraph state machine."""
+        workflow = StateGraph(DeepResearchState)
+
+        # Add nodes
+        workflow.add_node("plan_research", planning_node)
+        workflow.add_node("execute_research", research_execution_node)
+        workflow.add_node("synthesize_report", synthesis_node)
+        workflow.add_node(
+            "end_run", lambda state: logger.info("--- Reached End Run Node ---") or {}
+        )  # Simple end node
+
+        # Define edges
+        workflow.set_entry_point("plan_research")
+
+        workflow.add_edge(
+            "plan_research", "execute_research"
+        )  # Always execute after planning
+
+        # Conditional edge after execution
+        workflow.add_conditional_edges(
+            "execute_research",
+            should_continue,
+            {
+                "execute_research": "execute_research",  # Loop back if more steps
+                "synthesize_report": "synthesize_report",  # Move to synthesis if done
+                "end_run": "end_run",  # End if stop requested or error
+            },
+        )
+
+        workflow.add_edge("synthesize_report", "end_run")  # End after synthesis
+
+        app = workflow.compile()
+        return app
+
+    async def run(
+        self,
+        topic: str,
+        task_id: Optional[str] = None,
+        save_dir: str = "./tmp/deep_research",
+        max_parallel_browsers: int = 1,
+    ) -> Dict[str, Any]:
+        """
+        Starts the deep research process (Async Generator Version).
+
+        Args:
+            topic: The research topic.
+            task_id: Optional existing task ID to resume. If None, a new ID is generated.
+
+        Yields:
+             Intermediate state updates or messages during execution.
+        """
+        if self.runner and not self.runner.done():
+            logger.warning(
+                "Agent is already running. Please stop the current task first."
+            )
+            # Return an error status instead of yielding
+            return {
+                "status": "error",
+                "message": "Agent already running.",
+                "task_id": self.current_task_id,
+            }
+
+        self.current_task_id = task_id if task_id else str(uuid.uuid4())
+        output_dir = os.path.join(save_dir, self.current_task_id)
+        ensure_dir(output_dir)  # // ensure output dir exists
+
+        logger.info(
+            f"[AsyncGen] Starting research task ID: {self.current_task_id} for topic: '{topic}'"
+        )
+        logger.info(f"[AsyncGen] Output directory: {output_dir}")
+
+        self.stop_event = threading.Event()
+        _AGENT_STOP_FLAGS[self.current_task_id] = self.stop_event
+        agent_tools = await self._setup_tools(
+            self.current_task_id, self.stop_event, max_parallel_browsers
+        )
+        initial_state: DeepResearchState = {
+            "task_id": self.current_task_id,
+            "topic": topic,
+            "research_plan": [],
+            "search_results": [],
+            "messages": [],
+            "llm": self.llm,
+            "tools": agent_tools,
+            "output_dir": output_dir,
+            "browser_config": self.browser_config,
+            "final_report": None,
+            "current_step_index": 0,
+            "stop_requested": False,
+            "error_message": None,
+        }
+
+        loaded_state = {}
+        if task_id:
+            logger.info(f"Attempting to resume task {task_id}...")
+            loaded_state = _load_previous_state(task_id, output_dir)
+            initial_state.update(loaded_state)
+            if loaded_state.get("research_plan"):
+                logger.info(
+                    f"Resuming with {len(loaded_state['research_plan'])} plan steps and {len(loaded_state.get('search_results', []))} existing results."
+                )
+                initial_state["topic"] = (
+                    topic  # Allow overriding topic even when resuming? Or use stored topic? Let's use new one.
+                )
+            else:
+                logger.warning(
+                    f"Resume requested for {task_id}, but no previous plan found. Starting fresh."
+                )
+                initial_state["current_step_index"] = 0
+
+        # --- Execute Graph using ainvoke ---
+        final_state = None
+        status = "unknown"
+        message = None
+        try:
+            logger.info(f"Invoking graph execution for task {self.current_task_id}...")
+            self.runner = asyncio.create_task(self.graph.ainvoke(initial_state))
+            final_state = await self.runner
+            logger.info(f"Graph execution finished for task {self.current_task_id}.")
+
+            # Determine status based on final state
+            if self.stop_event and self.stop_event.is_set():
+                status = "stopped"
+                message = "Research process was stopped by request."
+                logger.info(message)
+            elif final_state and final_state.get("error_message"):
+                status = "error"
+                message = final_state["error_message"]
+                logger.error(f"Graph execution completed with error: {message}")
+            elif final_state and final_state.get("final_report"):
+                status = "completed"
+                message = "Research process completed successfully."
+                logger.info(message)
+            else:
+                # If it ends without error/report (e.g., empty plan, stopped before synthesis)
+                status = "finished_incomplete"
+                message = "Research process finished, but may be incomplete (no final report generated)."
+                logger.warning(message)
+
+        except asyncio.CancelledError:
+            status = "cancelled"
+            message = f"Agent run task cancelled for {self.current_task_id}."
+            logger.info(message)
+            # final_state will remain None or the state before cancellation if checkpointing was used
+        except Exception as e:
+            status = "error"
+            message = f"Unhandled error during graph execution for {self.current_task_id}: {e}"
+            logger.error(message, exc_info=True)
+            # final_state will remain None or the state before the error
+        finally:
+            logger.info(f"Cleaning up resources for task {self.current_task_id}")
+            task_id_to_clean = self.current_task_id
+
+            self.stop_event = None
+            self.current_task_id = None
+            self.runner = None  # Mark runner as finished
+            if self.mcp_client:
+                await self.mcp_client.__aexit__(None, None, None)
+
+            # Return a result dictionary including the status and the final state if available
+            return {
+                "status": status,
+                "message": message,
+                "task_id": task_id_to_clean,  # Use the stored task_id
+                "final_state": final_state
+                if final_state
+                else {},  # Return the final state dict
+            }
+
+    async def _stop_lingering_browsers(self, task_id):
+        """Attempts to stop any BrowserUseAgent instances associated with the task_id."""
+        keys_to_stop = [
+            key for key in _BROWSER_AGENT_INSTANCES if key.startswith(f"{task_id}_")
+        ]
+        if not keys_to_stop:
+            return
+
+        logger.warning(
+            f"Found {len(keys_to_stop)} potentially lingering browser agents for task {task_id}. Attempting stop..."
+        )
+        for key in keys_to_stop:
+            agent_instance = _BROWSER_AGENT_INSTANCES.get(key)
+            try:
+                if agent_instance:
+                    # Assuming BU agent has an async stop method
+                    await agent_instance.stop()
+                    logger.info(f"Called stop() on browser agent instance {key}")
+            except Exception as e:
+                logger.error(
+                    f"Error calling stop() on browser agent instance {key}: {e}"
+                )
+
+    async def stop(self):
+        """Signals the currently running agent task to stop."""
+        if not self.current_task_id or not self.stop_event:
+            logger.info("No agent task is currently running.")
+            return
+
+        logger.info(f"Stop requested for task ID: {self.current_task_id}")
+        self.stop_event.set()  # Signal the stop event
+        self.stopped = True
+        await self._stop_lingering_browsers(self.current_task_id)
+
+    def close(self):
+        self.stopped = False
