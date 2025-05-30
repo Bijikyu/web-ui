@@ -6,7 +6,7 @@ sys.path.append(".")
 
 
 def setup_stubs():
-    """Insert stub modules for gradio and browser_use dependencies."""
+    """Insert gradio and browser_use stubs so the run tab imports cleanly."""  #(added docstring explaining helper purpose)
     modules = {}
     sys.modules.setdefault("requests", types.ModuleType("requests"))  # stub requests for manager import
 
@@ -223,6 +223,7 @@ def setup_stubs():
 
 
 def teardown_stubs(modules):
+    """Remove previously inserted stub modules from sys.modules."""  #(added docstring describing cleanup)
     for name in modules:
         sys.modules.pop(name, None)
 

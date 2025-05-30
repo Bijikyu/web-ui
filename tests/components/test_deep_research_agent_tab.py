@@ -38,6 +38,7 @@ class DummyManager:
 
 
 def load_deep_tab(monkeypatch):
+    """Import deep_research_agent_tab with gradio and agent stubs."""  #(added docstring describing helper purpose)
     gradio = types.ModuleType("gradio")
     comps = types.ModuleType("gradio.components")
     comps.Component = DummyComp

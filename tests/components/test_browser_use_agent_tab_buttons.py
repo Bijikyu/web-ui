@@ -6,6 +6,7 @@ sys.path.append(".")
 
 
 def load_tab(monkeypatch):
+    """Import browser_use_agent_tab with all external modules stubbed."""  #(added docstring describing helper purpose)
     # gradio stubs
     gradio = types.ModuleType("gradio")
     comps = types.ModuleType("gradio.components")
@@ -145,6 +146,7 @@ def load_tab(monkeypatch):
 
 
 def make_manager(mod, Manager):
+    """Instantiate WebuiManager and create stub component map."""  #(added docstring describing helper purpose)
     mgr = Manager()
     comps = {
         "browser_use_agent.user_input": mod.gr.Textbox(),
@@ -161,6 +163,7 @@ def make_manager(mod, Manager):
     return mgr, comps
 
 async def collect(gen):
+    """Gather all items from an async generator into a list."""  #(added docstring describing helper purpose)
     res = []
     async for item in gen:
         res.append(item)

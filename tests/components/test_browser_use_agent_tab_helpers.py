@@ -8,6 +8,7 @@ sys.path.append(".")  # allow src imports
 
 
 def install_stubs():
+    """Add stub modules so the browser use tab imports without heavy deps."""  #(added docstring explaining helper purpose)
     gradio_mod = types.ModuleType("gradio")
     comps_mod = types.ModuleType("gradio.components")
     class Component:
@@ -68,6 +69,7 @@ def install_stubs():
 
 
 def remove_stubs(original):
+    """Restore original modules replaced by install_stubs."""  #(added docstring describing cleanup)
     for name, mod in original.items():
         if mod is not None:
             sys.modules[name] = mod

@@ -25,6 +25,7 @@ for name in mods:
         setattr(mod, "BrowserState", getattr(mod, "BrowserState", type("BrowserState", (), {})))
 
 def pytest_ignore_collect(path, config):  #(description of change & current functionality)
+    """Skip integration tests when gradio is unavailable."""  #(added docstring explaining hook purpose)
     if path.basename in {"test_webui_integration.py", "test_interface.py", "test_run_deep_research.py"}:  #(description of change & current functionality)
         from importlib.util import find_spec  #(description of change & current functionality)
         try:  #(description of change & current functionality)

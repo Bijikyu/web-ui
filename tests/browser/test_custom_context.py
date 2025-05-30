@@ -64,6 +64,7 @@ class DummyPWBrowser:
         return ctx
 
 def make_config(**kwargs):
+    """Return a context config namespace with provided overrides."""  #(added docstring describing helper purpose)
     base = {
         "force_new_context": False,
         "cookies_file": None,

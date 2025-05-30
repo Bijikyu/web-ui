@@ -13,6 +13,7 @@ class Dummy:
 
 
 def stub_module(monkeypatch, name, attrs=None):
+    """Create a temporary module with given attributes and insert into sys.modules."""  #(added docstring describing helper purpose)
     mod = types.ModuleType(name)
     if attrs:
         for k, v in attrs.items():
@@ -22,6 +23,7 @@ def stub_module(monkeypatch, name, attrs=None):
 
 
 def load_agent_settings_tab(monkeypatch):
+    """Load agent_settings_tab after injecting stubs for external deps."""  #(added docstring describing helper purpose)
     stubs = [
         ('openai', {'OpenAI': Dummy}),
         ('langchain_openai', {'ChatOpenAI': Dummy, 'AzureChatOpenAI': Dummy}),
