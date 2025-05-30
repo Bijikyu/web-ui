@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, mock_open, patch  # mocking tools
 from src.utils.utils import encode_image, get_latest_files  # functions under test
 
 
-def test_encode_image_success():  # ensure bytes encoded
+def test_encode_image_success():  # encode bytes and return base64 string
     data = b'abc'  # sample bytes
     m = mock_open(read_data=data)  # mock binary file
     m.return_value.read.return_value = data  # ensure bytes returned
@@ -19,8 +19,8 @@ def test_encode_image_success():  # ensure bytes encoded
     assert result == expected  # compare result
 
 
-def test_encode_image_none():  # none path returns None
-    assert encode_image(None) is None  # verify none
+def test_encode_image_none():  # None path should yield None
+    assert encode_image(None) is None  # expect None returned
 
 
 def fake_path(path, mtime):  # helper to build fake Path
@@ -31,7 +31,7 @@ def fake_path(path, mtime):  # helper to build fake Path
     return p  # return mock
 
 
-def test_get_latest_files():  # latest per extension
+def test_get_latest_files():  # select most recent file for each extension
     webm1 = fake_path('/dir/a.webm', 50)  # older webm
     webm2 = fake_path('/dir/b.webm', 100)  # newer webm
     zip1 = fake_path('/dir/a.zip', 60)  # zip file
@@ -50,7 +50,7 @@ def test_get_latest_files():  # latest per extension
     assert result['.zip'] == '/dir/a.zip'  # latest zip path
 
 
-def test_get_latest_files_missing_dir():  # dir absent handling
+def test_get_latest_files_missing_dir():  # handle missing directory by creating it
     with patch('os.path.exists', return_value=False):  # simulate missing dir
         with patch('src.utils.utils.ensure_dir') as mk:  # patch dir helper
             result = get_latest_files('/missing')  # call util

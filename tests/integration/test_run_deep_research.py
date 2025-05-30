@@ -207,7 +207,7 @@ def teardown_stubs(modules):
 
 
 
-def test_run_deep_research_simple(tmp_path, monkeypatch):
+def test_run_deep_research_simple(tmp_path, monkeypatch):  # run deep research workflow end-to-end
     modules = setup_stubs()
     orig_manager = sys.modules.pop("src.webui.webui_manager", None)
     orig_tab = sys.modules.pop("src.webui.components.deep_research_agent_tab", None)

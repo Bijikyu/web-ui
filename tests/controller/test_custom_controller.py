@@ -6,7 +6,7 @@ import types
 sys.path.append('.')
 
 
-def test_register_and_close(monkeypatch):
+def test_register_and_close(monkeypatch):  # ensure actions register and MCP client closes
     # create stubs for external dependencies
     pydantic_stub = types.ModuleType('pydantic')
     class BaseModel:  # simple BaseModel stub

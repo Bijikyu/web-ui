@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)  # (added logger for debug output)
 
 
 @pytest.mark.skip(reason="requires MCP servers and manual checks")
-async def test_mcp_client():  # (skip heavy MCP test)
+async def test_mcp_client():  # connect to MCP servers and enumerate tools
     from src.utils.mcp_client import setup_mcp_client_and_tools, create_tool_param_model
 
     test_server_config = {
@@ -53,7 +53,7 @@ async def test_mcp_client():  # (skip heavy MCP test)
 
 
 @pytest.mark.skip(reason="requires MCP servers and manual checks")
-async def test_controller_with_mcp():  # (skip heavy MCP integration test)
+async def test_controller_with_mcp():  # run controller action through MCP
     import os
     from src.controller.custom_controller import CustomController
     from browser_use.controller.registry.views import ActionModel

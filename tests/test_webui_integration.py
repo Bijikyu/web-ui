@@ -16,7 +16,7 @@ from src.webui.interface import create_ui
 
 
 @pytest.mark.asyncio
-async def test_launch_and_callbacks(monkeypatch):
+async def test_launch_and_callbacks(monkeypatch):  # start UI server and verify callbacks
     """Launch the WebUI and ensure tabs and callbacks exist."""  # (add integration test for webui)
     run_mock = AsyncMock(return_value={})  # mock start handler
     stop_mock = AsyncMock(return_value={})  # mock stop handler
@@ -47,7 +47,7 @@ async def test_launch_and_callbacks(monkeypatch):
     assert stop_mock.call_count == 0
 
 
-def test_tab_functions_invoked(monkeypatch):
+def test_tab_functions_invoked(monkeypatch):  # tab builders run exactly once
     """Ensure each tab creation function runs once during UI build."""  # (check create_ui wiring)
     create_agent = MagicMock(return_value=None)  # (mock agent settings tab)
     create_browser = MagicMock(return_value=None)  # (mock browser settings tab)

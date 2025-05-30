@@ -96,7 +96,7 @@ from src.webui.components import load_save_config_tab  # (import component)
 from src.webui.webui_manager import WebuiManager  # (import manager)
 
 
-def test_load_latest_config(tmp_path, monkeypatch):  # (ensure latest config loads)
+def test_load_latest_config(tmp_path, monkeypatch):  # load most recent config file
     old = tmp_path / "old.json"  # (older config file path)
     old.write_text("{}")  # (create empty json)
     time.sleep(0.01)  # (ensure timestamp difference)

@@ -109,7 +109,7 @@ class DummyManager:
         self.bu_controller = controller
 
 
-def test_update_model_dropdown_known(monkeypatch):
+def test_update_model_dropdown_known(monkeypatch):  # provider known -> dropdown populated
     mod = load_agent_settings_tab(monkeypatch)
     dd = mod.update_model_dropdown('openai')
     assert dd.choices == mod.config.model_names['openai']
@@ -117,7 +117,7 @@ def test_update_model_dropdown_known(monkeypatch):
     assert dd.interactive
 
 
-def test_update_model_dropdown_unknown(monkeypatch):
+def test_update_model_dropdown_unknown(monkeypatch):  # unknown provider -> empty dropdown
     mod = load_agent_settings_tab(monkeypatch)
     dd = mod.update_model_dropdown('foo')
     assert dd.choices == []
@@ -125,14 +125,14 @@ def test_update_model_dropdown_unknown(monkeypatch):
     assert dd.allow_custom_value
 
 
-def test_update_mcp_server_invalid(monkeypatch, tmp_path):
+def test_update_mcp_server_invalid(monkeypatch, tmp_path):  # invalid path hides config
     mod = load_agent_settings_tab(monkeypatch)
     mgr = DummyManager()
     result = asyncio.run(mod.update_mcp_server(str(tmp_path / 'no.json'), mgr))
     assert result == (None, mod.gr.update(visible=False))
 
 
-def test_update_mcp_server_valid(monkeypatch, tmp_path):
+def test_update_mcp_server_valid(monkeypatch, tmp_path):  # valid path loads config JSON
     mod = load_agent_settings_tab(monkeypatch)
     data = {'a': 1}
     json_file = tmp_path / 'cfg.json'

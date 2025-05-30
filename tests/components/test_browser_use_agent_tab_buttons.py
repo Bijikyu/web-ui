@@ -166,7 +166,7 @@ async def collect(gen):
         res.append(item)
     return res
 
-def test_handle_submit_running(monkeypatch):
+def test_handle_submit_running(monkeypatch):  # ignore input when task running
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     class DummyTask:
@@ -179,7 +179,7 @@ def test_handle_submit_running(monkeypatch):
     assert results == [{}]
 
 
-def test_handle_submit_new_task(monkeypatch):
+def test_handle_submit_new_task(monkeypatch):  # submitting text starts agent
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     async def fake_run(m, c):
@@ -191,7 +191,7 @@ def test_handle_submit_new_task(monkeypatch):
     assert results == [{"ok": True}]
 
 
-def test_handle_pause_resume(monkeypatch):
+def test_handle_pause_resume(monkeypatch):  # toggle pause state of running agent
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     mgr.bu_agent = mod.BrowserUseAgent()
@@ -205,14 +205,14 @@ def test_handle_pause_resume(monkeypatch):
     assert mgr.bu_agent.state.paused
 
 
-def test_handle_pause_resume_no_task(monkeypatch):
+def test_handle_pause_resume_no_task(monkeypatch):  # pause ignored when no task
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, _ = make_manager(mod, Manager)
     res = asyncio.run(mod.handle_pause_resume(mgr))
     assert res == {}
 
 
-def test_handle_stop_running(monkeypatch):
+def test_handle_stop_running(monkeypatch):  # stop button halts agent
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     mgr.bu_agent = mod.BrowserUseAgent()
@@ -230,7 +230,7 @@ def test_handle_stop_running(monkeypatch):
     assert res[rb] == mod.gr.update(interactive=False)
 
 
-def test_handle_stop_no_task(monkeypatch):
+def test_handle_stop_no_task(monkeypatch):  # stop without active task resets UI
     mod, Manager, _ = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     res = asyncio.run(mod.handle_stop(mgr))
@@ -244,7 +244,7 @@ def test_handle_stop_no_task(monkeypatch):
     assert res[cb] == mod.gr.update(interactive=True)
 
 
-def test_handle_clear(monkeypatch):
+def test_handle_clear(monkeypatch):  # clear button cancels task and resets state
     mod, Manager, Controller = load_tab(monkeypatch)
     mgr, comps = make_manager(mod, Manager)
     mgr.bu_agent = mod.BrowserUseAgent()

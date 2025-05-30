@@ -74,7 +74,7 @@ class SimpleConfig:
     def model_dump(self):
         return self.__dict__
 
-def test_new_context_merges_config():
+def test_new_context_merges_config():  # browser and context configs are combined
     browser_cfg = SimpleConfig(foo=1)  # (simple browser config)
     browser = CustomBrowser(config=browser_cfg)  # (instantiate browser)
     ctx_cfg = SimpleConfig(bar=2)  # (context config)

@@ -85,7 +85,7 @@ def patch_gradio(monkeypatch):
     yield
 
 
-def test_add_get_and_value(tmp_path):
+def test_add_get_and_value(tmp_path):  # components stored and retrieved correctly
     manager = WebuiManager(settings_save_dir=str(tmp_path))
     comp = DummyComponent()
     manager.add_components("tab", {"input": comp})
@@ -94,7 +94,7 @@ def test_add_get_and_value(tmp_path):
     assert manager.get_component_value({comp: "val"}, "tab", "input") == "val"
 
 
-def test_save_and_load(tmp_path):
+def test_save_and_load(tmp_path):  # saving config then loading restores values
     manager = WebuiManager(settings_save_dir=str(tmp_path))
     comp = DummyComponent()
     button = DummyButton()
@@ -115,13 +115,13 @@ def test_save_and_load(tmp_path):
     assert str(config_path) in update[status].value
 
 
-def test_get_most_recent_invalid_path(tmp_path):
+def test_get_most_recent_invalid_path(tmp_path):  # invalid dir returns None
     path = tmp_path / "missing"
     manager = WebuiManager(settings_save_dir=str(path))
     shutil.rmtree(path)
     assert manager.get_most_recent_config() is None
 
 
-def test_get_most_recent_no_files(tmp_path):
+def test_get_most_recent_no_files(tmp_path):  # no configs yet yields None
     manager = WebuiManager(settings_save_dir=str(tmp_path))
     assert manager.get_most_recent_config() is None
