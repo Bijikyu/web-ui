@@ -64,6 +64,7 @@ Install Python packages:
 ```bash
 uv pip install -r requirements.txt
 ```
+This installs all required packages, including `psutil` for process management and `playwright` for browser automation.
 
 Install Browsers in Playwright:
 You can install specific browsers by running:
@@ -227,6 +228,7 @@ CHROME_PERSISTENT_SESSION=true docker compose up --build
    ```bash
    uv pip install -r requirements.txt
    ```
+   # psutil and playwright are installed from requirements.txt for tests
 2. Install test specific packages:
    ```bash
    uv pip install -r tests/requirements.txt
