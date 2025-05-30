@@ -48,6 +48,7 @@ from src.webui.components.load_save_config_tab import create_load_save_config_ta
 # - Color contrast accessibility standards (WCAG 2.1)
 # - Visual hierarchy and component distinction
 # - Performance impact on rendering and interactions
+# "Ocean" is the default theme if none is specified to provide a professional baseline # (expanded comment on default theme handling)
 theme_map = {
     "Default": gr.themes.Default(),      # Gradio's standard theme, familiar to users
     "Soft": gr.themes.Soft(),           # Muted colors, easy on the eyes for long sessions
@@ -60,7 +61,7 @@ theme_map = {
 }
 
 
-def create_ui(theme_name="Ocean"):
+def create_ui(theme_name="Ocean"):  # theme_name selects a validated theme from theme_map # (expanded comment on parameter role)
     """
     Creates and configures the main Gradio user interface for the Browser Agent WebUI.
     
@@ -114,7 +115,8 @@ def create_ui(theme_name="Ocean"):
     # - Mobile-first design: Start with mobile layout, enhance for larger screens
     # - Theme-aware variables: Use Gradio's CSS variables for theme compatibility
     # - Performance-conscious: Minimize reflows and repaints
-    # 
+    # - Brand consistency: Burgundy background matches marketing materials # (added comment about custom CSS rationale)
+    #
     # Using !important declarations:
     # - Necessary to override Gradio's default styles which often use !important
     # - Applied judiciously only where Gradio's specificity cannot be overcome
@@ -355,5 +357,6 @@ def create_ui(theme_name="Ocean"):
     # - Enables testing of UI creation without starting web server
     # - Allows for additional configuration before launching
     # - Provides flexibility for different deployment scenarios
+    # - Allows queue().launch() to be called with deployment-specific options later # (clarify separation for queue/launch behavior)
     return demo
 ```
