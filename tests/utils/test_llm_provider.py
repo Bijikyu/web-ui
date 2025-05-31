@@ -1,6 +1,7 @@
 import sys
 import types
 import importlib
+import os
 import pytest
 
 sys.path.append('.')  # (allow src imports)
@@ -22,8 +23,7 @@ def stub_module(name, attrs=None):
 
 
 # Stub external modules so llm_provider imports without network packages
-stub_module('openai', {'OpenAI': Dummy})  # (create fake OpenAI class)
-stub_module('langchain_openai', {'ChatOpenAI': Dummy, 'AzureChatOpenAI': Dummy})  # (fake openai classes)
+# openai and langchain_openai are handled in the module when CODEX=True
 stub_module('langchain_ollama', {'ChatOllama': Dummy})  # (fake ollama class)
 stub_module('langchain_anthropic', {'ChatAnthropic': Dummy})  # (fake anthropic)
 stub_module('langchain_mistralai', {'ChatMistralAI': Dummy})  # (fake mistral)
@@ -68,6 +68,9 @@ stub_module(
 stub_module('langchain_core.output_parsers.base', {'OutputParserLike': Dummy})  # (fake parser)
 stub_module('langchain_core.runnables', {'Runnable': Dummy, 'RunnableConfig': Dummy})  # (fake runnables)
 stub_module('langchain_core.tools', {'BaseTool': Dummy})  # (fake tools)
+
+# enable offline mode so llm_provider creates fallback classes
+os.environ['CODEX'] = 'True'
 
 llm_provider = importlib.import_module('src.utils.llm_provider')  # (import target module)
 

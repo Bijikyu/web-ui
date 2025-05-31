@@ -3,6 +3,7 @@ import types
 import importlib
 import asyncio
 import json
+import os
 
 sys.path.append('.')
 
@@ -25,8 +26,6 @@ def stub_module(monkeypatch, name, attrs=None):
 def load_agent_settings_tab(monkeypatch):
     """Load agent_settings_tab after injecting stubs for external deps."""  #(added docstring describing helper purpose)
     stubs = [
-        ('openai', {'OpenAI': Dummy}),
-        ('langchain_openai', {'ChatOpenAI': Dummy, 'AzureChatOpenAI': Dummy}),
         ('langchain_ollama', {'ChatOllama': Dummy}),
         ('langchain_anthropic', {'ChatAnthropic': Dummy}),
         ('langchain_mistralai', {'ChatMistralAI': Dummy}),
@@ -64,6 +63,8 @@ def load_agent_settings_tab(monkeypatch):
     ]
     for name, attrs in stubs:
         stub_module(monkeypatch, name, attrs)
+
+    os.environ['CODEX'] = 'True'  # ensure fallback classes load
 
     gradio = stub_module(monkeypatch, 'gradio')
     components = stub_module(monkeypatch, 'gradio.components')

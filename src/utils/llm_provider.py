@@ -1,6 +1,27 @@
-from openai import OpenAI
-from langchain_openai import ChatOpenAI
 from src.utils.offline import is_offline  # offline helper for CODEX mode
+
+try:
+    from openai import OpenAI
+except ImportError:  #// handle missing SDK when offline
+    if is_offline():  # fallback only in Codex offline mode
+        class OpenAI:  #// simple dummy class so module loads
+            def __init__(self, *args, **kwargs):
+                pass
+    else:
+        raise
+
+try:
+    from langchain_openai import ChatOpenAI, AzureChatOpenAI
+except ImportError:  #// offline environment without langchain-openai
+    if is_offline():
+        class ChatOpenAI:  #// basic stand-in mimicking real constructor
+            def __init__(self, *args, **kwargs):
+                self.kwargs = kwargs
+
+        class AzureChatOpenAI(ChatOpenAI):
+            pass
+    else:
+        raise
 from langchain_core.globals import get_llm_cache
 from langchain_core.language_models.base import (
     BaseLanguageModel,
@@ -44,7 +65,6 @@ from langchain_anthropic import ChatAnthropic
 from langchain_mistralai import ChatMistralAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from langchain_ibm import ChatWatsonx
 from langchain_aws import ChatBedrock
 from pydantic import SecretStr
