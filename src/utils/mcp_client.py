@@ -60,20 +60,18 @@ the capabilities of automated browser workflows.
 """
 
 import json
-import logging
+import logging  # consolidated logging import
 import asyncio
-from typing import Any, Dict, List, Optional
 
 # Module-level logger for MCP client operations, protocol debugging, and performance monitoring
 # MCP operations involve external network calls and protocol-level communication
 # Detailed logging is essential for debugging connection issues and protocol violations
 logger = logging.getLogger(__name__)
 import inspect
-import logging
 import uuid
 from datetime import date, datetime, time
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Type, Union, get_type_hints
+from typing import Any, Dict, List, Optional, Set, Type, Union, get_type_hints  # consolidated typing imports
 
 from browser_use.controller.registry.views import ActionModel
 from langchain.tools import BaseTool
