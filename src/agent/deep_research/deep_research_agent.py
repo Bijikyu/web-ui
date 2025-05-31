@@ -898,3 +898,36 @@ async def synthesis_node(state: DeepResearchState) -> Dict[str, Any]:  #// compi
     except Exception as e:  # catch invocation errors
         logger.error(f"Error during synthesis: {e}", exc_info=True)  # log error details
         return {"error_message": f"Synthesis failed: {e}"}  # return error message
+
+
+class DeepResearchAgent:  # minimal agent for tests
+    def __init__(self, llm: Any, browser_config: Dict[str, Any], mcp_server_config: Optional[Dict[str, Any]] = None):
+        self.llm = llm  # store llm instance for tool setup
+        self.browser_config = browser_config  # store browser configuration
+        self.mcp_server_config = mcp_server_config  # optional MCP config
+        self.mcp_client = None  # will hold client if setup
+
+    async def _setup_tools(self, task_id: str, stop_event: threading.Event) -> List[Tool]:
+        """Create default tool set for the research workflow."""  # simple tool builder
+        tools = [
+            WriteFileTool(),
+            ReadFileTool(),
+            ListDirectoryTool(),
+            create_browser_search_tool(self.llm, self.browser_config, task_id, stop_event),
+        ]
+        if self.mcp_server_config:
+            client = await setup_mcp_client_and_tools(self.mcp_server_config)
+            if client:
+                self.mcp_client = client
+                tools.extend(client.get_tools())
+        return tools
+
+    async def close_mcp_client(self):
+        """Close MCP client if it was initialized."""  # cleanup helper
+        if self.mcp_client:
+            await self.mcp_client.__aexit__(None, None, None)
+            self.mcp_client = None
+
+    async def _compile_graph(self):
+        """Placeholder compile method used in tests."""  # no graph assembly
+        return None

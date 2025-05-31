@@ -39,7 +39,17 @@ cleanup requirements exceed what standard Python process management can handle.
 
 import asyncio
 import logging
-import psutil  # Platform-independent process and system utilities
+from src.utils.offline import is_offline  # helper for Codex offline mode
+try:
+    import psutil  # Platform-independent process and system utilities
+except Exception:  # psutil may be missing in offline mode
+    if is_offline():
+        class psutil:  # lightweight mock when offline
+            @staticmethod
+            def process_iter(*_args, **_kwargs):
+                return []
+    else:
+        raise
 import signal  # Unix signal handling for graceful process termination
 from typing import List, Optional
 

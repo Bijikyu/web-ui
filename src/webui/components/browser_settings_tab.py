@@ -81,16 +81,18 @@ async def close_browser(webui_manager: WebuiManager):  # cancel tasks and releas
     memory leaks.
     """
     # expanded docstring to clarify why resources and tasks are cleaned up
-    if webui_manager.bu_current_task and not webui_manager.bu_current_task.done():
-        webui_manager.bu_current_task.cancel()
+    if getattr(webui_manager, "bu_current_task", None) and not webui_manager.bu_current_task.done():  # safe attr lookup
+        webui_manager.bu_current_task.cancel()  # cancel running task if any
         webui_manager.bu_current_task = None
 
     await close_browser_resources(  # use shared util to close resources
-        webui_manager.bu_browser,
-        webui_manager.bu_browser_context,
+        getattr(webui_manager, "bu_browser", None),
+        getattr(webui_manager, "bu_browser_context", None),
     )
-    webui_manager.bu_browser_context = None  # reset context reference
-    webui_manager.bu_browser = None  # reset browser reference
+    if hasattr(webui_manager, "bu_browser_context"):
+        webui_manager.bu_browser_context = None  # reset context reference when present
+    if hasattr(webui_manager, "bu_browser"):
+        webui_manager.bu_browser = None  # reset browser reference when present
 
 def create_browser_settings_tab(webui_manager: WebuiManager):
     """
