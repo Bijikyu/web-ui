@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 
 def is_offline() -> bool:
     """Return ``True`` when running in Codex offline mode."""  #// check CODEX env
-    return os.getenv("CODEX") == "True"  # CODEX=True triggers offline behavior
+    val = os.getenv("CODEX", "")  #// get env var default empty
+    return str(val).lower() in {"true", "1", "yes", "y", "on"}  #// consider common truthy values
 
 
 def qerrors_stub(error, context="", *extra_args):

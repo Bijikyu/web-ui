@@ -24,6 +24,23 @@ for name in mods:
     elif name.endswith("browser.views"):
         setattr(mod, "BrowserState", getattr(mod, "BrowserState", type("BrowserState", (), {})))
 
+# Stub psutil when unavailable so imports succeed without installing the module
+if "psutil" not in sys.modules:  #// check if psutil missing
+    psutil_stub = types.ModuleType("psutil")  #// create stub module
+    def process_iter(*_args, **_kwargs):
+        return []  #// minimal iterator returning empty list
+    psutil_stub.process_iter = process_iter  #// attach stubbed function
+    sys.modules["psutil"] = psutil_stub  #// register stub module
+
+# Stub playwright async API when package is unavailable for tests
+if "playwright" not in sys.modules:  #// check if playwright missing
+    async_api = types.ModuleType("playwright.async_api")  #// stub submodule
+    async_api.async_playwright = lambda: None  #// minimal stub function
+    play_mod = types.ModuleType("playwright")  #// root module
+    play_mod.async_api = async_api  #// attach async_api
+    sys.modules["playwright"] = play_mod  #// register root module
+    sys.modules["playwright.async_api"] = async_api  #// register submodule
+
 def pytest_ignore_collect(path, config):  #(description of change & current functionality)
     """Skip integration tests when gradio is unavailable."""  #(added docstring explaining hook purpose)
     if path.basename in {"test_webui_integration.py", "test_interface.py", "test_run_deep_research.py"}:  #(description of change & current functionality)
