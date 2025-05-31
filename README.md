@@ -243,8 +243,10 @@ CHROME_PERSISTENT_SESSION=true docker compose up --build
 
 ## Offline Mode
 Set `CODEX=True` in your `.env` file to mock network operations when the
-environment lacks internet access. This allows tests and the application to run
-without contacting external services.
+environment lacks internet access. When enabled, the app uses a stubbed
+`qerrors` logger rather than the real module, preventing import errors and
+allowing error logging without the `qerrors` dependency. This lets tests and the
+application run without contacting external services.
 
 ## Changelog
 - [x] **2025/01/26:** Thanks to @vvincent1234. Now browser-use-webui can combine with DeepSeek-r1 to engage in deep thinking!
