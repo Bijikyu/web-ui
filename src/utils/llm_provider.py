@@ -130,7 +130,9 @@ class DeepSeekR1ChatOpenAI(ChatOpenAI):
             api_key=kwargs.get("api_key")  # api key may differ from global
         )
 
-    @offline_guard(AIMessage(content='mock response', reasoning_content='mock reasoning'))  # return mock message offline
+    _mock_msg = AIMessage(content='mock response')  # create mock AIMessage
+    _mock_msg.reasoning_content = 'mock reasoning'  # add reasoning attribute
+    @offline_guard(_mock_msg)  # return mock message offline
     async def ainvoke(
             self,
             input: LanguageModelInput,
@@ -156,7 +158,9 @@ class DeepSeekR1ChatOpenAI(ChatOpenAI):
         content = response.choices[0].message.content
         return AIMessage(content=content, reasoning_content=reasoning_content)
 
-    @offline_guard(AIMessage(content='mock response', reasoning_content='mock reasoning'))  # return mock message offline
+    _mock_sync_msg = AIMessage(content='mock response')  # create sync mock
+    _mock_sync_msg.reasoning_content = 'mock reasoning'  # add reasoning attribute
+    @offline_guard(_mock_sync_msg)  # return mock message offline
     def invoke(
             self,
             input: LanguageModelInput,
