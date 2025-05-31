@@ -94,9 +94,14 @@ async def setup_mcp_client_and_tools(mcp_server_config: Dict[str, Any]) -> Optio
 
     logger.info("Initializing MultiServerMCPClient...")
 
-    if is_offline():  # skip real connection when offline
-        logger.info("Running in CODEX offline mode; MCP client is mocked.")
-        return None  # no connection needed in offline mode
+    if is_offline():  # skip network when offline but allow mocked client
+        logger.info("Running in CODEX offline mode; attempting mock client.")
+        try:
+            client = MultiServerMCPClient(mcp_server_config)
+            await client.__aenter__()
+            return client
+        except Exception:
+            return None
 
     if not mcp_server_config:
         logger.error("No MCP server configuration provided.")
