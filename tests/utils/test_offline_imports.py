@@ -2,6 +2,7 @@ import asyncio
 import importlib
 import sys
 import types
+sys.path.append('.')  # ensure project root on path for imports
 
 
 def stub_module(name, attrs=None):
