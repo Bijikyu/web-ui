@@ -1,7 +1,8 @@
 """Offline mode utilities and qerrors wrapper."""  # module docstring describing purpose
 
-import logging
-import os
+import logging  # handle debug logs centrally
+import os  # env vars for offline detection
+import asyncio  # check coroutine functions for decorator
 
 logger = logging.getLogger(__name__)
 
@@ -28,5 +29,25 @@ def qerrors(error, context="", *extra_args):
             qerrors_stub(error, context, *extra_args)
 
 
-__all__ = ["is_offline", "qerrors"]  # export helpers
+def offline_guard(mock_return):
+    """Return decorator that provides ``mock_return`` when offline."""  #// central offline wrapper
+    def decorator(func):
+        if asyncio.iscoroutinefunction(func):
+            async def async_wrapper(*args, **kwargs):
+                if is_offline():  # return mock object when CODEX True
+                    logger.info(f"{func.__name__} mocked due to offline mode")
+                    return mock_return
+                return await func(*args, **kwargs)
+            return async_wrapper
+        else:
+            def wrapper(*args, **kwargs):
+                if is_offline():  # return mock object when CODEX True
+                    logger.info(f"{func.__name__} mocked due to offline mode")
+                    return mock_return
+                return func(*args, **kwargs)
+            return wrapper
+    return decorator
+
+
+__all__ = ["is_offline", "qerrors", "offline_guard"]  # export helpers
 

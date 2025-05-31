@@ -1,6 +1,6 @@
 from openai import OpenAI
 from langchain_openai import ChatOpenAI
-from src.utils.offline import is_offline  # offline helper for CODEX mode
+from src.utils.offline import is_offline, offline_guard  # offline helpers for CODEX mode; offline_guard centralizes mocks
 from langchain_core.globals import get_llm_cache
 from langchain_core.language_models.base import (
     BaseLanguageModel,
@@ -130,6 +130,7 @@ class DeepSeekR1ChatOpenAI(ChatOpenAI):
             api_key=kwargs.get("api_key")  # api key may differ from global
         )
 
+    @offline_guard(AIMessage(content='mock response', reasoning_content='mock reasoning'))  # return mock message offline
     async def ainvoke(
             self,
             input: LanguageModelInput,
@@ -147,18 +148,15 @@ class DeepSeekR1ChatOpenAI(ChatOpenAI):
             else:
                 message_history.append({"role": "user", "content": input_.content})
 
-        if not is_offline():  # use real API when CODEX is not True
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=message_history
-            )
-            reasoning_content = response.choices[0].message.reasoning_content
-            content = response.choices[0].message.content
-        else:  # provide mock values when running on Codex
-            reasoning_content = 'mock reasoning'  # mocked reasoning content
-            content = 'mock response'  # mocked message content
+        response = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=message_history
+        )  # real API call when CODEX not True
+        reasoning_content = response.choices[0].message.reasoning_content
+        content = response.choices[0].message.content
         return AIMessage(content=content, reasoning_content=reasoning_content)
 
+    @offline_guard(AIMessage(content='mock response', reasoning_content='mock reasoning'))  # return mock message offline
     def invoke(
             self,
             input: LanguageModelInput,
@@ -176,22 +174,19 @@ class DeepSeekR1ChatOpenAI(ChatOpenAI):
             else:
                 message_history.append({"role": "user", "content": input_.content})
 
-        if not is_offline():  # real API call when not on Codex
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=message_history
-            )
-            reasoning_content = response.choices[0].message.reasoning_content
-            content = response.choices[0].message.content
-        else:  # mocked values for Codex
-            reasoning_content = 'mock reasoning'  # mocked reasoning content
-            content = 'mock response'  # mocked message content
+        response = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=message_history
+        )  # real API call when CODEX not True
+        reasoning_content = response.choices[0].message.reasoning_content
+        content = response.choices[0].message.content
         return AIMessage(content=content, reasoning_content=reasoning_content)
 
 
 class DeepSeekR1ChatOllama(ChatOllama):
     """Ollama wrapper that splits reasoning tags from final content."""  # class docstring
 
+    @offline_guard(AIMessage(content='<think>mock reason</think>mock'))  # return mock reason offline
     async def ainvoke(
             self,
             input: LanguageModelInput,
@@ -200,10 +195,7 @@ class DeepSeekR1ChatOllama(ChatOllama):
             stop: Optional[list[str]] = None,
             **kwargs: Any,
     ) -> AIMessage:
-        if not is_offline():  # run real call when CODEX unset
-            org_ai_message = await super().ainvoke(input=input)
-        else:  # mock the ai message when running on Codex
-            org_ai_message = AIMessage(content='<think>mock reason</think>mock')
+        org_ai_message = await super().ainvoke(input=input)
         org_content = org_ai_message.content
         reasoning_content = org_content.split("</think>")[0].replace("<think>", "")
         content = org_content.split("</think>")[1]
@@ -211,6 +203,7 @@ class DeepSeekR1ChatOllama(ChatOllama):
             content = content.split("**JSON Response:**")[-1]
         return AIMessage(content=content, reasoning_content=reasoning_content)
 
+    @offline_guard(AIMessage(content='<think>mock reason</think>mock'))  # return mock reason offline
     def invoke(
             self,
             input: LanguageModelInput,
@@ -219,10 +212,7 @@ class DeepSeekR1ChatOllama(ChatOllama):
             stop: Optional[list[str]] = None,
             **kwargs: Any,
     ) -> AIMessage:
-        if not is_offline():  # run real call when CODEX unset
-            org_ai_message = super().invoke(input=input)
-        else:  # mock the ai message when running on Codex
-            org_ai_message = AIMessage(content='<think>mock reason</think>mock')
+        org_ai_message = super().invoke(input=input)
         org_content = org_ai_message.content
         reasoning_content = org_content.split("</think>")[0].replace("<think>", "")
         content = org_content.split("</think>")[1]
