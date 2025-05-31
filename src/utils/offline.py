@@ -3,6 +3,7 @@
 import logging  # handle debug logs centrally
 import os  # env vars for offline detection
 import asyncio  # check coroutine functions for decorator
+import functools  # used for preserving wrapped function metadata
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ def offline_guard(mock_return):
     """Return decorator that provides ``mock_return`` when offline."""  #// central offline wrapper
     def decorator(func):
         if asyncio.iscoroutinefunction(func):
+            @functools.wraps(func)  # preserve func signature for async wrapper
             async def async_wrapper(*args, **kwargs):
                 if is_offline():  # return mock object when CODEX True
                     logger.info(f"{func.__name__} mocked due to offline mode")
@@ -41,6 +43,7 @@ def offline_guard(mock_return):
                 return await func(*args, **kwargs)
             return async_wrapper
         else:
+            @functools.wraps(func)  # preserve func signature for sync wrapper
             def wrapper(*args, **kwargs):
                 if is_offline():  # return mock object when CODEX True
                     logger.info(f"{func.__name__} mocked due to offline mode")
