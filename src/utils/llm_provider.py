@@ -99,6 +99,9 @@ Provider Integration Patterns:
 
 This module serves as the foundation for all LLM interactions in the application,
 making it critical for reliability, performance, and maintainability of AI features.
+\nWhen offline (``is_offline()`` is ``True``), ``get_llm_model`` returns a simple mock
+object. The mock object implements ``invoke`` and ``ainvoke`` that each return
+``AIMessage(content='mock response')`` so tests can run without network access.
 """
 
 import json
@@ -261,6 +264,16 @@ def get_llm_model(provider: str, **kwargs):
     - No API keys are logged or exposed in error messages
     - Environment variable naming uses ``<PROVIDER>_API_KEY`` for consistency
     """
+
+    if is_offline():  #// return lightweight mock object in offline mode
+        class OfflineModel:  #// simple object exposing invoke and ainvoke
+            async def ainvoke(self, *args, **kwargs):  #// async mock method
+                return AIMessage(content='mock response')  #// mocked reply
+
+            def invoke(self, *args, **kwargs):  #// sync mock method
+                return AIMessage(content='mock response')  #// mocked reply
+
+        return OfflineModel()  #// provide mock model when CODEX True
 
     # Handle API key authentication for most providers
     # Ollama and Bedrock have different authentication mechanisms, so they're excluded

@@ -74,8 +74,9 @@ def test_llm_provider_offline(monkeypatch):
     stub_module("langchain_core.load", {"dumpd": lambda *a, **k: {}, "dumps": lambda *a, **k: ""})  #// stub dumps
 
     class Message:
-        def __init__(self, content=""):
+        def __init__(self, content="", reasoning_content=""):
             self.content = content  #// store message content
+            self.reasoning_content = reasoning_content  #// store reasoning text
 
     stub_module(
         "langchain_core.messages",

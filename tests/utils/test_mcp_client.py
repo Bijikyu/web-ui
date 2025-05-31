@@ -82,6 +82,7 @@ class FailClient(DummyClient):
 def test_setup_mcp_client_success(monkeypatch):
     """Successful MCP client creation should enter context."""  #(added docstring summarizing test intent)
     # client created and entered
+    monkeypatch.delenv('CODEX', raising=False)  #// ensure online behaviour
     monkeypatch.setattr(mcp_client, 'MultiServerMCPClient', SuccessClient)
     client = asyncio.run(setup_mcp_client_and_tools({'a': 1}))
     assert isinstance(client, SuccessClient)
@@ -91,6 +92,7 @@ def test_setup_mcp_client_success(monkeypatch):
 def test_setup_mcp_client_failure(monkeypatch):
     """Return None when MCP client initialization fails."""  #(added docstring summarizing test intent)
     # failure returns None
+    monkeypatch.delenv('CODEX', raising=False)  #// ensure online behaviour
     monkeypatch.setattr(mcp_client, 'MultiServerMCPClient', FailClient)
     client = asyncio.run(setup_mcp_client_and_tools({'a': 1}))
     assert client is None
