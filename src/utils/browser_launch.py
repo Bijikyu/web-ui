@@ -73,9 +73,7 @@ def build_browser_launch_options(config: Dict[str, Any]) -> Tuple[Optional[str],
     Environment variables ``CHROME_PATH`` and ``CHROME_USER_DATA`` override
     path settings when ``use_own_browser`` is true.
     """  # function description expanded
-    if is_offline():  # load local stub when offline
-        async_playwright = lambda: None  # minimal mock for tests
-    else:
+    if not is_offline():  # only import when online; offline mode uses no import
         from playwright.async_api import async_playwright  # import lazily when online
     window_w = config.get("window_width", 1280)  # width from config; default 1280
     window_h = config.get("window_height", 1100)  # height from config; default 1100
