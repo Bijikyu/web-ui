@@ -24,6 +24,8 @@ for name in mods:
     elif name.endswith("browser.views"):
         setattr(mod, "BrowserState", getattr(mod, "BrowserState", type("BrowserState", (), {})))
 
+sys.modules.setdefault("psutil", types.ModuleType("psutil"))  #// stub psutil for environments without it
+
 def pytest_ignore_collect(path, config):  #(description of change & current functionality)
     """Skip integration tests when gradio is unavailable."""  #(added docstring explaining hook purpose)
     if path.basename in {"test_webui_integration.py", "test_interface.py", "test_run_deep_research.py"}:  #(description of change & current functionality)

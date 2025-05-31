@@ -240,7 +240,10 @@ def test_run_agent_task_simple(tmp_path):
     WebuiManager = importlib.import_module("src.webui.webui_manager").WebuiManager
     bu_tab = importlib.import_module("src.webui.components.browser_use_agent_tab")
 
+    import os
+
     async def runner():
+        os.environ["CODEX"] = "True"  #// enable offline mode to bypass Playwright import
         manager = WebuiManager(settings_save_dir=str(tmp_path))
         manager.init_browser_use_agent()
 
@@ -285,6 +288,7 @@ def test_run_agent_task_simple(tmp_path):
         assert not final_update[pause_button].interactive
         assert final_update[clear_button].interactive
         assert final_update[chatbot].value == manager.bu_chat_history
+        os.environ.pop("CODEX", None)  #// cleanup offline flag
 
     asyncio.run(runner())
     for name, mod in {
