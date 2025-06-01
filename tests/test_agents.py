@@ -1,5 +1,4 @@
-import pdb
-import pytest  # (import for importorskip)
+import pytest  # (import for importorskip) #(pdb import removed, tests run without debug)
 pytest.importorskip("dotenv", reason="python-dotenv required")  # (skip if dotenv missing)
 
 from dotenv import load_dotenv
@@ -326,9 +325,7 @@ async def test_browser_use_parallel():
         pprint(history.final_result(), indent=4)
 
         print("\nErrors:")
-        pprint(history.errors(), indent=4)
-
-        pdb.set_trace()
+        pprint(history.errors(), indent=4)  # (removed pdb.set_trace to avoid interactive debug)
 
     except Exception:
         import traceback
