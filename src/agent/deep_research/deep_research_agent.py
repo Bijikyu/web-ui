@@ -112,6 +112,7 @@ async def run_single_browser_task(
 
     bu_browser = None
     bu_browser_context = None
+    task_key = None  # track instance key for cleanup
     try:
         logger.info(f"Starting browser task for query: {task_query}")
         browser_binary_path, extra_args = build_browser_launch_options(browser_config)  # handles user data dir and custom browser
@@ -200,8 +201,8 @@ async def run_single_browser_task(
             bu_browser_context,
         )
 
-        if task_key in _BROWSER_AGENT_INSTANCES:
-            del _BROWSER_AGENT_INSTANCES[task_key]
+        if task_key and task_key in _BROWSER_AGENT_INSTANCES:
+            del _BROWSER_AGENT_INSTANCES[task_key]  # remove from registry if present
 
 
 class BrowserSearchInput(BaseModel):
