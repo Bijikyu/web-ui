@@ -745,8 +745,10 @@ async def handle_clear(webui_manager: WebuiManager) -> Dict[Component, Any]:
     if webui_manager.bu_current_task and not webui_manager.bu_current_task.done():
         webui_manager.bu_current_task.cancel()
     await close_browser(webui_manager)
+    if getattr(webui_manager, "bu_controller", None):
+        await webui_manager.bu_controller.close_mcp_client()  # close remote client before reset
     webui_manager.bu_agent = None
-    webui_manager.bu_controller = None
+    webui_manager.bu_controller = None  # drop controller after closing client
     webui_manager.bu_current_task = None
     webui_manager.bu_chat_history = []
     webui_manager.bu_response_event = None
