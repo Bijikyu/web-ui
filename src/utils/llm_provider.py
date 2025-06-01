@@ -202,10 +202,14 @@ class DeepSeekR1ChatOllama(ChatOllama):
             stop: Optional[list[str]] = None,
             **kwargs: Any,
     ) -> AIMessage:
-        org_ai_message = await super().ainvoke(input=input)
-        org_content = org_ai_message.content
-        reasoning_content = org_content.split("</think>")[0].replace("<think>", "")
-        content = org_content.split("</think>")[1]
+        org_ai_message = await super().ainvoke(input=input)  # handle async call
+        org_content = org_ai_message.content  # grab full response text
+        if "</think>" in org_content:  # check delimiter presence for reasoning
+            reasoning_content = org_content.split("</think>")[0].replace("<think>", "")  # isolate reasoning when found
+            content = org_content.split("</think>", 1)[1]  # grab final message portion
+        else:
+            reasoning_content = ""  # no reasoning section found
+            content = org_content  # treat entire message as final content
         if "**JSON Response:**" in content:
             content = content.split("**JSON Response:**")[-1]
         return AIMessage(content=content, reasoning_content=reasoning_content)
@@ -219,10 +223,14 @@ class DeepSeekR1ChatOllama(ChatOllama):
             stop: Optional[list[str]] = None,
             **kwargs: Any,
     ) -> AIMessage:
-        org_ai_message = super().invoke(input=input)
-        org_content = org_ai_message.content
-        reasoning_content = org_content.split("</think>")[0].replace("<think>", "")
-        content = org_content.split("</think>")[1]
+        org_ai_message = super().invoke(input=input)  # handle sync call
+        org_content = org_ai_message.content  # grab full response text
+        if "</think>" in org_content:  # check delimiter presence for reasoning
+            reasoning_content = org_content.split("</think>")[0].replace("<think>", "")  # isolate reasoning when found
+            content = org_content.split("</think>", 1)[1]  # grab final message portion
+        else:
+            reasoning_content = ""  # no reasoning section found
+            content = org_content  # treat entire message as final content
         if "**JSON Response:**" in content:
             content = content.split("**JSON Response:**")[-1]
         return AIMessage(content=content, reasoning_content=reasoning_content)
