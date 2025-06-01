@@ -22,9 +22,8 @@ from dotenv import load_dotenv
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-SKIP_LLM_API_KEY_VERIFICATION = (
-    os.environ.get("SKIP_LLM_API_KEY_VERIFICATION", "false").lower()[0] in "ty1"
-)
+env_val = os.environ.get("SKIP_LLM_API_KEY_VERIFICATION", "false").strip().lower()  # (normalize env var to avoid index error)
+SKIP_LLM_API_KEY_VERIFICATION = env_val[:1] in "ty1"  # (check first char safely)
 
 
 class BrowserUseAgent(Agent):
