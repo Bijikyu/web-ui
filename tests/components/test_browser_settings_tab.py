@@ -147,8 +147,8 @@ components = types.ModuleType("gradio.components")
 class DummyComp:
     def __init__(self, *args, **kwargs):
         self.fn = None
-    def change(self, fn):
-        self.fn = fn
+    def change(self, fn, **kwargs):
+        self.fn = fn  # (allow unused kwargs so change() mirrors gradio API)
 
 class Checkbox(DummyComp):
     pass

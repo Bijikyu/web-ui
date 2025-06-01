@@ -35,8 +35,8 @@ def setup_stubs():
     class DummyComp:
         def __init__(self, *a, **k):
             self.fn = None
-        def change(self, fn):
-            self.fn = fn
+        def change(self, fn, **kwargs):
+            self.fn = fn  # (accept extras for parity with real gradio)
         def click(self, fn=None, inputs=None, outputs=None):
             self.fn = fn
     for attr in ['Group', 'Row', 'Column', 'Textbox', 'Checkbox', 'Number', 'Button', 'File']:
