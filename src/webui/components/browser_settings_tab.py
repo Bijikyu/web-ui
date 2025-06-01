@@ -93,6 +93,9 @@ async def close_browser(webui_manager: WebuiManager):  # cancel tasks and releas
         webui_manager.bu_browser_context = None  # reset context reference when present
     if hasattr(webui_manager, "bu_browser"):
         webui_manager.bu_browser = None  # reset browser reference when present
+    if getattr(webui_manager, "bu_controller", None):
+        await webui_manager.bu_controller.close_mcp_client()  # close remote client before discard
+        webui_manager.bu_controller = None  # drop controller reference after closing
 
 def create_browser_settings_tab(webui_manager: WebuiManager):
     """
