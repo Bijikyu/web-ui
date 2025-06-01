@@ -538,7 +538,7 @@ async def run_agent_task(
     save_download_path = webui_manager.get_component_value(components, "browser_settings", "save_download_path", "./tmp/downloads")
 
     stream_vw = 70
-    stream_vh = int(70 * window_h // window_w)
+    stream_vh = int(70 * window_h // window_w) if window_w else 0  # // default stream height to 0 when width is 0
 
     ensure_dir(save_agent_history_path)  # // ensure save history path
     if save_recording_path:
