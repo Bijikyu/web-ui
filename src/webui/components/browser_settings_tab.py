@@ -219,7 +219,7 @@ def create_browser_settings_tab(webui_manager: WebuiManager):
         """Wrapper for handle_clear."""  # called when toggles affecting browser are changed
         await close_browser(webui_manager)
 
-    headless.change(close_wrapper)  # closing browser ensures new setting takes effect
-    keep_browser_open.change(close_wrapper)  # allow toggling without stale instance
-    disable_security.change(close_wrapper)  # update security flags immediately
-    use_own_browser.change(close_wrapper)  # handle switching between local/managed browser
+    headless.change(close_wrapper, inputs=None)  # (explicitly pass None so close_wrapper receives no args)
+    keep_browser_open.change(close_wrapper, inputs=None)  # (explicitly pass None so close_wrapper receives no args)
+    disable_security.change(close_wrapper, inputs=None)  # (explicitly pass None so close_wrapper receives no args)
+    use_own_browser.change(close_wrapper, inputs=None)  # (explicitly pass None so close_wrapper receives no args)
