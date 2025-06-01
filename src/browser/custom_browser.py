@@ -70,7 +70,7 @@ class CustomBrowser(Browser):
         # check if port 9222 is already taken, if so remove the remote-debugging-port arg to prevent conflicts with other Chrome instances
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             if s.connect_ex(('localhost', 9222)) == 0:
-                chrome_args.remove('--remote-debugging-port=9222')  # avoid crashing when port in use
+                chrome_args.discard('--remote-debugging-port=9222')  # replaced remove with discard so absent flag doesn't raise
 
         browser_class = getattr(playwright, self.config.browser_class)
         args = {
