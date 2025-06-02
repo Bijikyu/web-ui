@@ -55,7 +55,7 @@ class BrowserUseAgent(Agent):
         state remains intact during manual inspection.
         """  # (expanded run docstring with parameters and rationale)
 
-        loop = asyncio.get_event_loop()  # Event loop required for signal handling
+        loop = asyncio.get_running_loop()  # use running loop due to deprecation of get_event_loop and to ensure proper async context
 
         # Set up the Ctrl+C signal handler with callbacks specific to this agent
         from browser_use.utils import SignalHandler
