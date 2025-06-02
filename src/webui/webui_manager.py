@@ -393,7 +393,7 @@ class WebuiManager:
         # max() with key=os.path.getmtime finds the file with the latest timestamp
         return max(config_files, key=os.path.getmtime)
 
-    def save_config(self, components: Dict["Component", str]) -> None:
+    def save_config(self, components: Dict["Component", str]) -> str:  # changed return type to str for clarity
         """
         Persist current UI component states to a timestamped configuration file.
         
