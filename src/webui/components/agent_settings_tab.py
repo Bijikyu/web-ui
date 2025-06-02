@@ -94,7 +94,7 @@ def create_agent_settings_tab(webui_manager: WebuiManager):
     """
     Creates an agent settings tab.
     """
-    input_components = set(webui_manager.get_components())
+    input_components = list(webui_manager.get_components())  # // maintain order when referencing components
     tab_components = {}
 
     with gr.Row():  # two columns to keep system prompt inputs aligned

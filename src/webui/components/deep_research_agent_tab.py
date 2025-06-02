@@ -351,7 +351,7 @@ def create_deep_research_agent_tab(webui_manager: WebuiManager):
     """
     Creates a deep research agent tab
     """
-    input_components = set(webui_manager.get_components())
+    input_components = list(webui_manager.get_components())  # // maintain order when referencing components
     tab_components = {}
 
     with gr.Group():  # file selection separate from rest of form
@@ -407,10 +407,11 @@ def create_deep_research_agent_tab(webui_manager: WebuiManager):
     )
 
     dr_tab_outputs = list(tab_components.values())
-    all_managed_inputs = set(webui_manager.get_components())
+    all_managed_inputs = list(webui_manager.get_components())  # // keep defined order for value mapping
 
     # --- Define Event Handler Wrappers ---
-    async def start_wrapper(comps: Dict[Component, Any]) -> AsyncGenerator[Dict[Component, Any], None]:  # relay start button event
+    async def start_wrapper(*vals) -> AsyncGenerator[Dict[Component, Any], None]:  # // build comps dict from ordered values
+        comps = dict(zip(all_managed_inputs, vals))  # // map components to values for handler
         async for update in run_deep_research(webui_manager, comps):
             yield update
 
