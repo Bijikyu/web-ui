@@ -325,7 +325,7 @@ async def stop_deep_research(webui_manager: WebuiManager) -> Dict[Component, Any
             stop_button_comp: gr.update(interactive=False),
             webui_manager.get_component_by_id("deep_research_agent.research_task"): gr.update(interactive=True),
             webui_manager.get_component_by_id("deep_research_agent.resume_task_id"): gr.update(interactive=True),
-            webui_manager.get_component_by_id("deep_research_agent.max_iteration"): gr.update(interactive=True),
+            webui_manager.get_component_by_id("deep_research_agent.parallel_num"): gr.update(interactive=True),  # // correct component for parallel agents
             webui_manager.get_component_by_id("deep_research_agent.max_query"): gr.update(interactive=True),
         }
 

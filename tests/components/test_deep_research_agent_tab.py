@@ -154,8 +154,8 @@ def test_stop_deep_research_running(monkeypatch, tmp_path):
     mgr = DummyManager()
     names = [
         "stop_button", "start_button", "markdown_display", "markdown_download",
-        "research_task", "resume_task_id", "max_iteration", "max_query"
-    ]
+        "research_task", "resume_task_id", "parallel_num", "max_query"
+    ]  # // updated component id list to match code changes
     for name in names:
         mgr.components[f"deep_research_agent.{name}"] = DummyComp()
     mgr.dr_agent = DummyAgent()
