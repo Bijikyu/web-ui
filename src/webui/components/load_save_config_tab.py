@@ -86,7 +86,7 @@ def create_load_save_config_tab(webui_manager: WebuiManager):
     """
     Creates a load and save config tab.
     """
-    input_components = set(webui_manager.get_components())
+    input_components = list(webui_manager.get_components())  # // maintain order when referencing components
     tab_components = {}
 
     # Load most recent config on startup
@@ -122,9 +122,15 @@ def create_load_save_config_tab(webui_manager: WebuiManager):
 
     webui_manager.add_components("load_save_config", tab_components)  # register load/save widgets for persistence
 
+    all_components = list(webui_manager.get_components())  # // inputs for saving config in consistent order
+
+    def save_wrapper(*vals):  # // map ordered values back to components
+        comps = dict(zip(all_components, vals))  # // create {Component: value} mapping
+        return webui_manager.save_config(comps)  # // call manager save
+
     save_config_button.click(
-        fn=webui_manager.save_config,  # persist current settings to file
-        inputs=set(webui_manager.get_components()),
+        fn=save_wrapper,  # persist current settings to file
+        inputs=all_components,
         outputs=[config_status]
     )
 

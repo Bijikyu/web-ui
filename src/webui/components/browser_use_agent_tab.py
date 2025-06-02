@@ -819,9 +819,10 @@ def create_browser_use_agent_tab(webui_manager: WebuiManager):
     webui_manager.init_browser_use_agent()
 
     tab_outputs = list(tab_components.values())
-    all_inputs = set(webui_manager.get_components())
+    all_inputs = list(webui_manager.get_components())  # // keep order for correct value mapping
 
-    async def submit_wrapper(comps: Dict[Component, Any]) -> AsyncGenerator[Dict[Component, Any], None]:
+    async def submit_wrapper(*vals) -> AsyncGenerator[Dict[Component, Any], None]:  # // build comps dict from ordered values
+        comps = dict(zip(all_inputs, vals))  # // map components to values for handler
         async for upd in handle_submit(webui_manager, comps):
             yield upd
 
