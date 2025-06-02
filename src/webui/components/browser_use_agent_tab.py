@@ -774,6 +774,16 @@ async def handle_clear(webui_manager: WebuiManager) -> Dict[Component, Any]:
     }
 
 
+async def handle_help_submit(webui_manager: WebuiManager, text: str) -> Dict[Component, Any]:  # // new handler for user help responses
+    """Store help response and trigger waiting event."""  # // explain behavior
+    webui_manager.bu_user_help_response = text  # // save response text
+    event = getattr(webui_manager, "bu_response_event", None)  # // get waiting event if exists
+    if event:  # // ensure event exists
+        event.set()  # // resume ask_assistant callback
+    help_input = webui_manager.get_component_by_id("browser_use_agent.help_response_input")  # // get textbox component
+    return {help_input: gr.update(value="")}  # // clear the textbox after submit
+
+
 def create_browser_use_agent_tab(webui_manager: WebuiManager):
     """Create the main browser use agent tab UI."""  # builds and wires components
     tab_components = {}
@@ -784,6 +794,8 @@ def create_browser_use_agent_tab(webui_manager: WebuiManager):
             stop_button = gr.Button("⏹️ Stop", variant="stop", interactive=False)
             pause_button = gr.Button("⏸️ Pause", interactive=False)
             clear_button = gr.Button("Clear")
+    help_input = gr.Textbox(label="Help Response", lines=2, interactive=True)  # // input for manual agent help
+    help_button = gr.Button("Submit Response")  # // button submits help text
     chatbot = gr.Chatbot()
     browser_view = gr.HTML()
     history_file = gr.File(interactive=False)
@@ -799,6 +811,8 @@ def create_browser_use_agent_tab(webui_manager: WebuiManager):
             browser_view=browser_view,
             agent_history_file=history_file,
             recording_gif=gif,
+            help_response_input=help_input,  # // register help response textbox
+            help_submit_button=help_button,  # // register help submit button
         )
     )
     webui_manager.add_components("browser_use_agent", tab_components)
@@ -828,4 +842,10 @@ def create_browser_use_agent_tab(webui_manager: WebuiManager):
         return await handle_clear(webui_manager)
 
     clear_button.click(clear_wrapper, outputs=tab_outputs)
+
+    async def help_wrapper(text: str) -> Dict[Component, Any]:
+        return await handle_help_submit(webui_manager, text)  # // call help handler
+
+    help_button.click(help_wrapper, inputs=[help_input], outputs=[help_input])  # // bind button to handler
+    help_input.submit(help_wrapper, inputs=[help_input], outputs=[help_input])  # // submit on enter
 
