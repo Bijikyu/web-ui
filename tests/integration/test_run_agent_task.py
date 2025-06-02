@@ -406,8 +406,8 @@ def test_run_agent_task_invalid_mcp_config(tmp_path):
 
         updates = [u async for u in bu_tab.run_agent_task(manager, components)]
 
-        assert len(updates) == 1
-        msg = updates[0][chatbot].value[-1]["content"]
+        assert len(updates) == 2  # MCP config error occurs after initial state update
+        msg = updates[-1][chatbot].value[-1]["content"]
         assert msg.startswith("**Setup Error:**")
 
     asyncio.run(runner())

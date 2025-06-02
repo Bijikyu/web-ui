@@ -422,24 +422,7 @@ async def run_agent_task(
         yield {run_button_comp: gr.update(interactive=True)}
         return
 
-    mcp_server_config_comp = webui_manager.id_to_component.get(  #(description of change & current functionality)
-        "agent_settings.mcp_server_config"  #(description of change & current functionality)
-    )
-    mcp_server_config_str = (  #(description of change & current functionality)
-        components.get(mcp_server_config_comp) if mcp_server_config_comp else None
-    )
-    if mcp_server_config_str:  #(description of change & current functionality)
-        try:  #(description of change & current functionality)
-            mcp_server_config = json.loads(mcp_server_config_str)  #(description of change & current functionality)
-        except json.JSONDecodeError:  #(description of change & current functionality)
-            err_msg = "**Setup Error:** invalid MCP config"  #(description of change & current functionality)
-            yield {  #(description of change & current functionality)
-                run_button_comp: gr.Button(interactive=True),  #(description of change & current functionality)
-                chatbot_comp: gr.update(value=[{"role": "assistant", "content": err_msg}]),  #(description of change & current functionality)
-            }
-            return  #(description of change & current functionality)
-    else:  #(description of change & current functionality)
-        mcp_server_config = None  #(description of change & current functionality)
+    # MCP config parsed later  #(description of change & current functionality)
 
     # Set running state indirectly via _current_task
     webui_manager.bu_chat_history.append({"role": "user", "content": task})
