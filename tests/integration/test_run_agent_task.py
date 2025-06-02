@@ -420,3 +420,73 @@ def test_run_agent_task_invalid_mcp_config(tmp_path):
         else:
             sys.modules[name] = mod
     teardown_stubs(modules)
+
+
+def test_run_agent_task_context_error(tmp_path):
+    """Browser context failures should surface an error message."""  #(description of change & current functionality)
+    modules = setup_stubs()
+    orig_manager = sys.modules.pop("src.webui.webui_manager", None)
+    orig_tab = sys.modules.pop("src.webui.components.browser_use_agent_tab", None)
+    WebuiManager = importlib.import_module("src.webui.webui_manager").WebuiManager
+    bu_tab = importlib.import_module("src.webui.components.browser_use_agent_tab")
+
+    async def fail_ctx(self, config=None):
+        raise RuntimeError("boom")
+
+    modules["src.browser.custom_browser"].CustomBrowser.new_context = fail_ctx
+    async def dummy_close(self):
+        pass
+    modules["src.controller.custom_controller"].CustomController.close_mcp_client = dummy_close
+
+    async def runner():
+        manager = WebuiManager(settings_save_dir=str(tmp_path))
+        manager.init_browser_use_agent()
+
+        user_input = modules["gradio"].Textbox()
+        run_button = modules["gradio"].Button()
+        stop_button = modules["gradio"].Button()
+        pause_button = modules["gradio"].Button()
+        clear_button = modules["gradio"].Button()
+        chatbot = modules["gradio"].Chatbot()
+        history_file = modules["gradio"].File()
+        gif = modules["gradio"].Image()
+        browser_view = modules["gradio"].HTML()
+        keep_open = modules["gradio"].Button()
+
+        manager.add_components(
+            "browser_use_agent",
+            {
+                "user_input": user_input,
+                "run_button": run_button,
+                "stop_button": stop_button,
+                "pause_resume_button": pause_button,
+                "clear_button": clear_button,
+                "chatbot": chatbot,
+                "agent_history_file": history_file,
+                "recording_gif": gif,
+                "browser_view": browser_view,
+            },
+        )
+        manager.add_components("browser_settings", {"keep_browser_open": keep_open})
+
+        components = {user_input: "do", keep_open: True}
+
+        updates = [u async for u in bu_tab.run_agent_task(manager, components)]
+
+        assert len(updates) == 2
+        update = updates[-1]
+        assert update[run_button].interactive
+        assert not update[stop_button].interactive
+        assert not update[pause_button].interactive
+        assert update[chatbot].value[-1]["content"].startswith("**Setup Error:**")
+
+    asyncio.run(runner())
+    for name, mod in {
+        "src.webui.webui_manager": orig_manager,
+        "src.webui.components.browser_use_agent_tab": orig_tab,
+    }.items():
+        if mod is None:
+            sys.modules.pop(name, None)
+        else:
+            sys.modules[name] = mod
+    teardown_stubs(modules)
