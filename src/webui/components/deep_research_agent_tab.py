@@ -396,9 +396,9 @@ def create_deep_research_agent_tab(webui_manager: WebuiManager):
     webui_manager.init_deep_research_agent()
 
     async def update_wrapper(mcp_file):
-        """Wrapper for handle_pause_resume."""  # processes MCP file selection
+        """Wrapper for MCP file changes."""  # returns update dictionary for event
         update_dict = await update_mcp_server(mcp_file, webui_manager)
-        yield update_dict
+        return update_dict  # return dict instead of yielding
 
     mcp_json_file.change(
         update_wrapper,  # refresh server config textbox
