@@ -643,7 +643,16 @@ async def run_agent_task(
         )  # // path for generated GIF
 
     except Exception as e:  # // capture any setup errors
-        logger.error(f"run_agent_task encountered error: {e}", exc_info=True)
+        logger.error(f"run_agent_task encountered error: {e}", exc_info=True)  # // log setup issue
+        err_msg = f"**Setup Error:** {e}"  # // prepare user facing error message
+        webui_manager.bu_chat_history.append({"role": "assistant", "content": err_msg})  # // add error to chat
+        await close_browser(webui_manager)  # // cleanup partially created resources
+        yield {
+            run_button_comp: gr.Button(value="▶️ Submit Task", interactive=True),  # // re-enable run
+            stop_button_comp: gr.Button(interactive=False),  # // disable stop
+            pause_resume_button_comp: gr.Button(interactive=False),  # // disable pause
+            chatbot_comp: gr.update(value=webui_manager.bu_chat_history),  # // show error in chat
+        }
         return
 
     # --- 6. Construct and run the agent ---  #(create agent and set callbacks)
