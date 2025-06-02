@@ -5,8 +5,12 @@ import os
 
 from browser_use.browser.browser import Browser, IN_DOCKER
 from browser_use.browser.context import BrowserContext, BrowserContextConfig
-from patchright.async_api import Browser as PlaywrightBrowser
-from patchright.async_api import BrowserContext as PlaywrightBrowserContext
+try:  # try patchright for extended features
+    from patchright.async_api import Browser as PlaywrightBrowser
+    from patchright.async_api import BrowserContext as PlaywrightBrowserContext
+except ImportError:  # fallback to playwright on failure
+    from playwright.async_api import Browser as PlaywrightBrowser
+    from playwright.async_api import BrowserContext as PlaywrightBrowserContext
 from typing import Optional
 from browser_use.browser.context import BrowserContextState
 
