@@ -1,14 +1,24 @@
 """Custom browser implementation with enhanced setup."""  # module docstring summarizing purpose
 import asyncio
 
-from patchright.async_api import Browser as PlaywrightBrowser
-from patchright.async_api import (
-    BrowserContext as PlaywrightBrowserContext,
-)
-from patchright.async_api import (
-    Playwright,
-    async_playwright,
-)
+try:  # attempt patchright first for browser automation
+    from patchright.async_api import Browser as PlaywrightBrowser  # use patchright Browser when available
+    from patchright.async_api import (
+        BrowserContext as PlaywrightBrowserContext,
+    )
+    from patchright.async_api import (
+        Playwright,
+        async_playwright,
+    )
+except ImportError:  # fallback to upstream playwright if patchright missing
+    from playwright.async_api import Browser as PlaywrightBrowser
+    from playwright.async_api import (
+        BrowserContext as PlaywrightBrowserContext,
+    )
+    from playwright.async_api import (
+        Playwright,
+        async_playwright,
+    )
 from browser_use.browser.browser import Browser, IN_DOCKER
 from browser_use.browser.context import BrowserContext, BrowserContextConfig  # deduped duplicate import
 import logging  # removed extra PlaywrightBrowserContext import
