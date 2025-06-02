@@ -213,7 +213,7 @@ def setup_stubs():
 
     utils_module = types.ModuleType("src.utils.agent_utils")
     async def initialize_llm(*a, **k):
-        return None
+        return object()
     utils_module.initialize_llm = initialize_llm
     modules["src.utils.agent_utils"] = utils_module
 

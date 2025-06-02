@@ -50,7 +50,7 @@ def install_stubs():
     modules["src.browser.custom_browser"].CustomBrowser = type("CustomBrowser", (), {})
     modules["src.browser.custom_context"].CustomBrowserContextConfig = type("CustomBrowserContextConfig", (), {})
     modules["src.controller.custom_controller"].CustomController = type("CustomController", (), {})
-    modules["src.utils.agent_utils"].initialize_llm = lambda *a, **k: None
+    modules["src.utils.agent_utils"].initialize_llm = lambda *a, **k: object()
     modules["src.utils.browser_launch"].build_browser_launch_options = lambda *a, **k: (None, [])
 
     class DummyWebuiManager:

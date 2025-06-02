@@ -557,6 +557,18 @@ async def run_agent_task(
         ollama_num_ctx if llm_provider_name == "ollama" else None,
     )
 
+    if main_llm is None:  # // check that llm initialization succeeded
+        err_msg = "**Setup Error:** LLM initialization failed"  # // error text for chatbot
+        webui_manager.bu_chat_history.append({"role": "assistant", "content": err_msg})  # // log error to chat history
+        yield {  # // reset UI buttons on init failure
+            run_button_comp: gr.Button(value="▶️ Submit Task", interactive=True),  # // enable run button
+            stop_button_comp: gr.Button(interactive=False),  # // disable stop button
+            pause_resume_button_comp: gr.Button(interactive=False),  # // disable pause/resume
+            clear_button_comp: gr.Button(interactive=False),  # // disable clear to avoid wiping history accidentally
+            chatbot_comp: gr.update(value=webui_manager.bu_chat_history),  # // display error message
+        }
+        return  # // abort run when llm is missing
+
     # Pass the webui_manager instance to the callback when wrapping it
     async def ask_callback_wrapper(
         query: str, browser_context: BrowserContext

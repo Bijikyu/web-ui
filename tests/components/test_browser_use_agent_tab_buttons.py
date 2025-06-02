@@ -112,7 +112,7 @@ def load_tab(monkeypatch):
 
     utils_mod = types.ModuleType("src.utils.agent_utils")
     async def initialize_llm(*a, **k):
-        return None
+        return object()
     utils_mod.initialize_llm = initialize_llm
     monkeypatch.setitem(sys.modules, "src.utils.agent_utils", utils_mod)
 
