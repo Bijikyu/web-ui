@@ -198,3 +198,4 @@ class CustomController(Controller):
         """  # added docstring for explaining graceful shutdown use
         if self.mcp_client:
             await self.mcp_client.__aexit__(None, None, None)  # graceful shutdown of MCP session
+            self.mcp_client = None  # (reset after closing & free resources)
