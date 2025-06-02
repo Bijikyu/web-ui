@@ -146,8 +146,10 @@ def test_register_and_close(monkeypatch):
     assert action.function is controller.mcp_client.server_name_to_tools['srv'][0]
     assert action.param_model == 'model'
     assert controller.mcp_client.entered
+    client = controller.mcp_client  # capture client for post-close checks
     asyncio.run(controller.close_mcp_client())
-    assert controller.mcp_client.exited
+    assert client.exited  # verify client exit invoked
+    assert controller.mcp_client is None  # (controller resets mcp_client)
 
     sys.modules.pop('src.controller.custom_controller', None)
     sys.modules.pop('src.utils.mcp_client', None)
