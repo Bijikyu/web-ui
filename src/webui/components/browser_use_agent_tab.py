@@ -224,8 +224,7 @@ async def _handle_new_step(
         # Initialize it maybe? Or raise an error? For now, log and potentially skip chat update.
         webui_manager.bu_chat_history = []  # Initialize if missing (consider if this is the right place)
         # return # Or stop if this is critical
-    step_num -= 1
-    logger.info(f"Step {step_num} completed.")
+    logger.info(f"Step {step_num} completed.")  # step numbers now reflect actual agent steps
 
     # --- Screenshot Handling ---
     screenshot_html = ""
