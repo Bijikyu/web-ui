@@ -351,8 +351,7 @@ def create_deep_research_agent_tab(webui_manager: WebuiManager):
     """
     Creates a deep research agent tab
     """
-    input_components = list(webui_manager.get_components())  # // maintain order when referencing components
-    tab_components = {}
+    tab_components = {}  # // removed unused input_components variable
 
     with gr.Group():  # file selection separate from rest of form
         with gr.Row():
