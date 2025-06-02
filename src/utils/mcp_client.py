@@ -81,9 +81,6 @@ from pydantic import BaseModel, Field, create_model  # ensure single import for 
 from src.utils.offline import offline_guard  #// keep offline guard decorator only
 
 
-logger = logging.getLogger(__name__)
-
-
 @offline_guard(None)  # return None when offline
 async def setup_mcp_client_and_tools(mcp_server_config: Dict[str, Any]) -> Optional[MultiServerMCPClient]:
     """Initialize MCP client and return the connected instance.
