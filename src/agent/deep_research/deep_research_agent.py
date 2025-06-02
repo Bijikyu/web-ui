@@ -705,7 +705,7 @@ async def research_execution_node(state: DeepResearchState) -> Dict[str, Any]:  
                 # Assuming tool functions handle async correctly
                 tool_output = await selected_tool.ainvoke(tool_args)
                 logger.info(f"Tool '{tool_name}' executed successfully.")
-                browser_tool_called = "parallel_browser_search" in executed_tool_names
+                browser_tool_called = tool_name == "parallel_browser_search"  #// ensures only search tool results extend search data
                 # Append result to overall search results
                 current_search_results = state.get("search_results", [])
                 if browser_tool_called:  # Specific handling for browser tool output
