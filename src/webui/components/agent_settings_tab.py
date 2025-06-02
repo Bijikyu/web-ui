@@ -323,9 +323,9 @@ def create_agent_settings_tab(webui_manager: WebuiManager):
     )
 
     async def update_wrapper(mcp_file):
-        """Wrapper for handle_pause_resume."""  # retains async signature for event handler
+        """Wrapper for MCP file changes."""  # returns dictionary update instead of yielding
         update_dict = await update_mcp_server(mcp_file, webui_manager)
-        yield update_dict
+        return update_dict  # use return to send update dictionary
 
     mcp_json_file.change(
         update_wrapper,  # refresh textbox when user selects a new MCP file
