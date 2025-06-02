@@ -159,7 +159,7 @@ async def run_deep_research(webui_manager: WebuiManager, components: Dict[Compon
         else:
             logger.info(f"Agent started with Task ID: {running_task_id}")
 
-        webui_manager.dr_task_id = running_task_id  # Store for stop handler
+        webui_manager.dr_task_id = running_task_id  # // save running task ID for stop handler
 
         # --- 6. Monitor Progress via research_plan.md ---
         if running_task_id:
@@ -251,8 +251,8 @@ async def run_deep_research(webui_manager: WebuiManager, components: Dict[Compon
 
     finally:
         # --- 8. Final UI Reset ---
-        webui_manager.dr_current_task = None  # Clear task reference
-        webui_manager.dr_task_id = None  # Clear running task ID
+        webui_manager.dr_current_task = None  # // reset running task
+        webui_manager.dr_task_id = None  # // remove stored task ID
 
         yield {
             start_button_comp: gr.update(value="▶️ Run", interactive=True),
@@ -272,7 +272,7 @@ async def stop_deep_research(webui_manager: WebuiManager) -> Dict[Component, Any
     logger.info("Stop button clicked for Deep Research.")
     agent = webui_manager.dr_agent
     task = webui_manager.dr_current_task
-    task_id = webui_manager.dr_task_id
+    task_id = webui_manager.dr_task_id  # // fetch running task ID from manager
     base_save_dir = webui_manager.dr_save_dir
 
     stop_button_comp = webui_manager.get_component_by_id("deep_research_agent.stop_button")

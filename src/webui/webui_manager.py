@@ -163,7 +163,7 @@ class WebuiManager:
         State variables explained:
         - dr_agent: The Deep Research Agent instance managing the research workflow
         - dr_current_task: Task handle for the research process (typically longer-running)
-        - dr_agent_task_id: Unique identifier for research sessions
+        - dr_task_id: Unique identifier for research sessions  # // rename to match tab references
         - dr_save_dir: Directory for storing research outputs (reports, intermediate data)
         
         The Deep Research Agent operates differently from Browser Use Agent:
@@ -178,7 +178,7 @@ class WebuiManager:
         # Task management for research workflow execution
         # Research tasks are typically long-running and less interactive
         self.dr_current_task = None
-        self.dr_agent_task_id: Optional[str] = None
+        self.dr_task_id: Optional[str] = None  # // store active research task ID
         
         # Output directory for research artifacts
         # Research generates multiple files: reports, plans, search results, etc.
