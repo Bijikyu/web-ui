@@ -287,11 +287,15 @@ def get_llm_model(provider: str, **kwargs):
     # Ollama and Bedrock have different authentication mechanisms, so they're excluded
     if provider not in ["ollama", "bedrock"]:
         # Construct expected environment variable name using consistent naming convention
-        env_var = f"{provider.upper()}_API_KEY"
+        env_var = f"{provider.upper()}_API_KEY"  # naming convention for api key
+        alt_var = "SiliconFLOW_API_KEY" if provider == "siliconflow" else ""  # additional check for SiliconFlow
 
-        # Priority: explicit parameter > environment variable > empty string
-        # This allows override while defaulting to secure environment variable storage
-        api_key = kwargs.get("api_key", "") or os.getenv(env_var, "")
+        # Priority: explicit parameter > env var(s) > empty string
+        api_key = (
+            kwargs.get("api_key", "")
+            or os.getenv(env_var, "")
+            or (os.getenv(alt_var, "") if alt_var else "")
+        )  # capture key from any valid source
 
         # Validate API key presence before attempting to create model
         # Early validation prevents confusing provider-specific errors later
@@ -452,9 +456,9 @@ def get_llm_model(provider: str, **kwargs):
         )
     elif provider == "siliconflow":
         if not kwargs.get("api_key", ""):
-            api_key = os.getenv("SiliconFLOW_API_KEY", "")
+            api_key = os.getenv("SILICONFLOW_API_KEY", "") or os.getenv("SiliconFLOW_API_KEY", "")  # prefer either env var
         else:
-            api_key = kwargs.get("api_key")
+            api_key = kwargs.get("api_key")  # use provided key directly
         if not kwargs.get("base_url", ""):
             base_url = os.getenv("SiliconFLOW_ENDPOINT", "")
         else:
