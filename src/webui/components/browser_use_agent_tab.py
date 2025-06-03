@@ -714,9 +714,9 @@ async def handle_pause_resume(webui_manager: WebuiManager) -> Dict[Component, An
     if not agent or not task or task.done():
         return {}
     if getattr(agent.state, "paused", False):
-        agent.resume()
+        await agent.resume()  # (await agent resume to handle async call)
         return {pause_button: gr.update(value="⏸️ Pause", interactive=True)}
-    agent.pause()
+    await agent.pause()  # (await agent pause to handle async call)
     return {pause_button: gr.update(value="▶️ Resume", interactive=True)}
 
 

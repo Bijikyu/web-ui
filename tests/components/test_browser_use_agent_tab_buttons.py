@@ -84,9 +84,9 @@ def load_tab(monkeypatch):
     class DummyAgent:
         def __init__(self):
             self.state = types.SimpleNamespace(paused=False, stopped=False)
-        def pause(self):
+        async def pause(self):  # (make async to match awaited calls)
             self.state.paused = True
-        def resume(self):
+        async def resume(self):  # (make async to match awaited calls)
             self.state.paused = False
         def stop(self):
             self.state.stopped = True
