@@ -60,43 +60,38 @@ class CustomBrowser(Browser):
             screen_size = get_screen_resolution()  # match visible screen size in headed mode
             offset_x, offset_y = get_window_adjustments()  # adjust for OS chrome
 
-        chrome_args = {
-            *CHROME_ARGS,  # baseline Playwright flags for stability
-            *(CHROME_DOCKER_ARGS if IN_DOCKER else []),  # additional flags required in Docker
-            *(CHROME_HEADLESS_ARGS if self.config.headless else []),  # hide UI when requested
-            *(CHROME_DISABLE_SECURITY_ARGS if self.config.disable_security else []),  # disable security features when requested
-            *(CHROME_DETERMINISTIC_RENDERING_ARGS if self.config.deterministic_rendering else []),  # ensure repeatable rendering
-            f'--window-position={offset_x},{offset_y}',  # start position so capture tools align correctly
-            *self.config.extra_browser_args,
-        }  # final Chromium argument set
-        contain_window_size = False
+        chrome_args = list(CHROME_ARGS)  # base Chrome args list maintaining order
+        if IN_DOCKER:
+            chrome_args.extend(CHROME_DOCKER_ARGS)  # append docker specific flags
+        if self.config.headless:
+            chrome_args.extend(CHROME_HEADLESS_ARGS)  # append headless flags when requested
+        if self.config.disable_security:
+            chrome_args.extend(CHROME_DISABLE_SECURITY_ARGS)  # add security disabling flags
+        if self.config.deterministic_rendering:
+            chrome_args.extend(CHROME_DETERMINISTIC_RENDERING_ARGS)  # add deterministic rendering flags
+        chrome_args.append(f'--window-position={offset_x},{offset_y}')  # set initial position for consistency
+        chrome_args.extend(self.config.extra_browser_args)  # finally add extra args from config
+        contain_window_size = False  # track if user provided size arg
         for arg in self.config.extra_browser_args:
             if "--window-size" in arg:
                 contain_window_size = True
                 break
         if not contain_window_size:
-            chrome_args.add(f'--window-size={screen_size["width"]},{screen_size["height"]}')  # ensure consistent viewport size
+            chrome_args.append(
+                f'--window-size={screen_size["width"]},{screen_size["height"]}'
+            )  # append default size when absent
 
         # check if port 9222 is already taken, if so remove the remote-debugging-port arg to prevent conflicts with other Chrome instances
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             if s.connect_ex(('localhost', 9222)) == 0:
-                chrome_args.discard('--remote-debugging-port=9222')  # replaced remove with discard so absent flag doesn't raise
+                if '--remote-debugging-port=9222' in chrome_args:
+                    chrome_args.remove('--remote-debugging-port=9222')  # remove arg only when present
 
         browser_class = getattr(playwright, self.config.browser_class)
         args = {
-            'chromium': list(chrome_args),
-            'firefox': [
-                *{
-                    '-no-remote',
-                    *self.config.extra_browser_args,
-                }
-            ],
-            'webkit': [
-                *{
-                    '--no-startup-window',
-                    *self.config.extra_browser_args,
-                }
-            ],
+            'chromium': chrome_args,  # pass computed chromium args list
+            'firefox': ['-no-remote', *self.config.extra_browser_args],  # firefox args list in order
+            'webkit': ['--no-startup-window', *self.config.extra_browser_args],  # webkit args list in order
         }
 
         browser = await browser_class.launch(
