@@ -1,11 +1,12 @@
 
 { pkgs }: {
   deps = [
-    pkgs.python39
-    pkgs.python39Packages.pip
-    pkgs.python39Packages.python-dotenv
-    pkgs.python39Packages.gradio
-    pkgs.python39Packages.setuptools
-    pkgs.python39Packages.wheel
+    pkgs.python312
+    pkgs.python312Packages.pip
+    pkgs.python312Packages.python-dotenv
+    pkgs.python312Packages.setuptools
+    pkgs.python312Packages.wheel
+    pkgs.playwright-driver
+    pkgs.chromium
   ];
 }
